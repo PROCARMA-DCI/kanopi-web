@@ -29,7 +29,10 @@ export function IndustrySection() {
   const animSvgM = readSvg('industry-anim-mobile.svg');
 
   return (
-    <section className="industry">
+    // id="industry" → a scroll target for useScroll().scrollTo("industry").
+    // (Its GSAP animation is scroll-scrubbed, so it's intentionally NOT a
+    // full-screen snap section like the rate-flow screens.)
+    <section className="industry" id="industry">
       <h2 className="industry__title">A $42 Billion industry</h2>
       <p className="industry__subtitle">because you&apos;re paying more than you should.</p>
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Lato, Caveat, Poppins } from "next/font/google";
 import "./globals.css";
+import ScrollProvider from "./ScrollProvider";
 
 const lato = Lato({
   variable: "--font-lato",
@@ -37,9 +38,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${lato.variable} ${caveat.variable} ${poppins.variable} h-full antialiased`}
+      className={`${lato.variable} ${caveat.variable} ${poppins.variable} h-full antialiased snap-y snap-proximity`}
     >
-      <body className="min-h-full flex flex-col" suppressHydrationWarning>{children}</body>
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
+        {/* App-wide smooth scroll — any client component can call useScroll(). */}
+        <ScrollProvider>{children}</ScrollProvider>
+      </body>
     </html>
   );
 }

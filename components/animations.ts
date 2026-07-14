@@ -22,12 +22,15 @@ export function initAnimations() {
   initSlider();
   initScrollReveal();
 
-  const introBtn = document.querySelector<HTMLElement>('.intro__btn');
-  if (introBtn) {
-    introBtn.addEventListener('mousedown', () => {
-      gsap.to(window, { duration: 1, scrollTo: '#sale' });
-    });
-  }
+  // NOTE: the intro button scroll is now handled by <IntroCheckDealButton />
+  // through the shared ScrollProvider (scrollTo("check-rates")). The old
+  // handler below pointed at "#sale", which no longer exists, so it's disabled.
+  // const introBtn = document.querySelector<HTMLElement>('.intro__btn');
+  // if (introBtn) {
+  //   introBtn.addEventListener('mousedown', () => {
+  //     gsap.to(window, { duration: 1, scrollTo: '#sale' });
+  //   });
+  // }
 }
 
 // ─── Scene animations (exact Shopify index.js) ────────────────────────────
