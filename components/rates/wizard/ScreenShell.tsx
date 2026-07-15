@@ -2,12 +2,10 @@
 
 import { Button } from "@/components/ui/button";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect, useRef, type ReactNode } from "react";
+import { cn } from "@/lib/utils";
 import { GaiaBubble } from "../GaiaBubble";
 import { RatesHeader } from "../RatesHeader";
-
-gsap.registerPlugin(ScrollTrigger);
 
 interface ScreenShellProps {
   /** Section DOM id (scroll target) — usually flow.stepId(index). */
@@ -19,11 +17,25 @@ interface ScreenShellProps {
   /** Header section label, e.g. "About You". */
   title: string;
   /** Gaia's question. */
-  question: string;
+  question?: string;
   canAdvance: boolean;
   nextLabel?: string;
   onNext: () => void;
   onBack: () => void;
+  /**
+   * Width of the CHILDREN + FOOTER column. The footer buttons always match the
+   * children width because they share this column. Default = form width.
+   * Pass e.g. "max-w-4xl" or "max-w-none" (full) per screen.
+   */
+  contentClassName?: string;
+  /**
+   * Optional heading rendered ABOVE the content column, in its own (usually
+   * wider) area — so a big title can be wide while the fields/cards and the
+   * buttons below stay narrower and aligned to each other.
+   */
+  heading?: ReactNode;
+  /** Width of the heading area (default wide). */
+  headingClassName?: string;
   /** The screen's own fields / body. */
   children: ReactNode;
 }
@@ -52,6 +64,9 @@ export function ScreenShell({
   nextLabel = "Next",
   onNext,
   onBack,
+  contentClassName = "max-w-[684px]",
+  heading,
+  headingClassName = "max-w-4xl",
   children,
 }: ScreenShellProps) {
   const rootRef = useRef<HTMLElement>(null);
@@ -63,6 +78,7 @@ export function ScreenShell({
     if (!el || !content) return;
 
     const header = el.querySelector<HTMLElement>("header");
+    const targets = [header, content].filter(Boolean) as HTMLElement[];
     const prefersReduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
@@ -70,30 +86,41 @@ export function ScreenShell({
     // Reduced-motion: no animation at all, everything sharp and static.
     if (prefersReduced) return;
 
-    const ctx = gsap.context(() => {
-      // The ONE entry effect: a scroll-linked focus pull. Header + content are
-      // blurred while the screen is only partly on-screen and sharpen as it
-      // settles into view (and re-blur on the way back). No opacity animation,
-      // so nothing flickers. Blur is applied to header and content directly
-      // (never an ancestor) so the sticky header keeps sticking.
-      gsap.fromTo(
-        [header, content].filter(Boolean) as HTMLElement[],
-        { filter: "blur(12px)" },
-        {
-          filter: "blur(0px)",
-          ease: "none",
-          scrollTrigger: {
-            trigger: el,
-            start: "top 80%",
-            end: "top 30%",
-            scrub: 0.6,
-          },
-        },
-      );
-    }, el);
+    // ── Focus-pull blur: only the MINORITY screen blurs ─────────────────────
+    // Measure, in pixels, how much of the viewport this screen currently
+    // covers. The screen filling the majority (>=50%) stays sharp; the other
+    // one (less than 50% on-screen) blurs — more the smaller it gets. So during
+    // a transition exactly one screen blurs out, never both. All px-based
+    // (getBoundingClientRect + innerHeight) — no vh units.
+    const MAX_BLUR = 12;
+    let raf = 0;
 
-    // Header shine sweep — replays on each fresh entry. It only animates its
-    // own gradient bar (never content opacity), so it can't cause flicker.
+    const updateBlur = () => {
+      raf = 0;
+      const viewportPx = window.innerHeight;
+      const rect = el.getBoundingClientRect();
+      const visiblePx = Math.max(
+        0,
+        Math.min(rect.bottom, viewportPx) - Math.max(rect.top, 0),
+      );
+      const coverage = viewportPx > 0 ? visiblePx / viewportPx : 0;
+      // >=50% visible → sharp; below that, blur ramps up to MAX at 0% visible.
+      const ratio = coverage >= 0.5 ? 0 : (0.5 - coverage) / 0.5;
+      const blur = +(ratio * MAX_BLUR).toFixed(2);
+      const value = blur < 0.15 ? "" : `blur(${blur}px)`;
+      for (const t of targets) t.style.filter = value;
+    };
+
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(updateBlur);
+    };
+
+    updateBlur();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+
+    // ── Header shine sweep — replays on each fresh entry ─────────────────────
+    const ctx = gsap.context(() => {});
     let inView = false;
     const io = new IntersectionObserver(
       ([entry]) => {
@@ -126,6 +153,10 @@ export function ScreenShell({
     io.observe(el);
 
     return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+      for (const t of targets) t.style.filter = "";
       io.disconnect();
       ctx.revert();
     };
@@ -144,12 +175,23 @@ export function ScreenShell({
 
       <div
         ref={contentRef}
-        className="flex flex-1 items-center justify-center px-6 py-16 will-change-[filter]"
+        className="flex flex-1 flex-col items-center justify-center gap-8 px-6 py-16 will-change-[filter]"
       >
-        <div className="flex w-full max-w-[684px] flex-col gap-8">
-          <div data-stagger className="text-left">
-            <GaiaBubble question={question} />
+        {/* Wide/full heading area — independent of the content column width. */}
+        {heading && (
+          <div data-stagger className={cn("w-full", headingClassName)}>
+            {heading}
           </div>
+        )}
+
+        {/* Content column: children AND footer share this width, so the
+            buttons are always exactly as wide as the children. */}
+        <div className={cn("flex w-full flex-col gap-8", contentClassName)}>
+          {question && (
+            <div data-stagger className="text-left">
+              <GaiaBubble question={question} />
+            </div>
+          )}
 
           <div data-stagger>{children}</div>
 

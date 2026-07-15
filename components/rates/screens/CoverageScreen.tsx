@@ -24,7 +24,19 @@ export function CoverageScreen({ index }: { index: number }) {
       total={flow.total}
       completion={canAdvance ? 1 : 0}
       title="Your Coverage"
-      question={`We found ${COVERAGES.length} coverage options for you.`}
+      // Wide title lives in the `heading` slot; cards + footer share the
+      // default content width, so the buttons match the cards.
+      heading={
+        <>
+          <h1 className="text-center text-[52px] font-bold text-[#2D3D00]">
+            Ok, we found {COVERAGES.length} coverage options available for your
+            vehicle.
+          </h1>
+          <p className="mt-2 text-center text-[#7d8760]">
+            Please select one of the following coverage options.
+          </p>
+        </>
+      }
       canAdvance={canAdvance}
       nextLabel={index === flow.total - 1 ? "See my rate" : "Next"}
       onNext={() => flow.next(index, { coverageId: selectedId })}

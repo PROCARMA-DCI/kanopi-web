@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { ScreenShell } from "../wizard/ScreenShell";
+import { useState } from "react";
 import { useFlow } from "../wizard/FlowProvider";
+import { ScreenShell } from "../wizard/ScreenShell";
 
 /** No-account · Step 1 — the driver's-license name. */
 export function NameScreen({ index }: { index: number }) {
@@ -27,7 +27,7 @@ export function NameScreen({ index }: { index: number }) {
       onNext={() => flow.next(index, { firstName, lastName })}
       onBack={() => flow.back(index)}
     >
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 max-w-[684px]">
         <Input
           placeholder="First Name"
           value={firstName}
