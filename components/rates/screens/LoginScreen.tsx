@@ -24,6 +24,7 @@ export function LoginScreen({ index }: { index: number }) {
       title="Welcome back"
       question="Sign in and we'll pull up your details."
       canAdvance={canAdvance}
+      nextLabel="Log in"
       onNext={() => flow.next(index, { email })}
       onBack={() => flow.back(index)}
     >

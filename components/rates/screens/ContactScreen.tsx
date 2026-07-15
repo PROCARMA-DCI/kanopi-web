@@ -30,7 +30,7 @@ export function ContactScreen({ index }: { index: number }) {
       title="Stay in touch"
       question="Great to meet you Penelope. What's your Home address? "
       canAdvance={canAdvance}
-      nextLabel="See my rate"
+      nextLabel={index === flow.total - 1 ? "See my rate" : "Next"}
       onNext={() => flow.next(index, { streetAddress, apt, city, state })}
       onBack={() => flow.back(index)}
     >

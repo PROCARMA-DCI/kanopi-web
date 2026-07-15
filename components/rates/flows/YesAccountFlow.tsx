@@ -1,26 +1,19 @@
 "use client";
 
 import { LoginScreen } from "../screens/LoginScreen";
-import { ResultScreen } from "../screens/ResultScreen";
-import { VehicleScreen } from "../screens/VehicleScreen";
+import { DashboardScreen } from "../screens/DashboardScreen";
 import { FlowProvider, useFlow } from "../wizard/FlowProvider";
 
-// The returning-member journey. Independent of the no-account flow — change one
-// without affecting the other.
-const TOTAL = 2;
+// Returning-member journey: sign in, then land on the account dashboard.
+// Login is the only wizard step; the dashboard is the terminal page.
+const TOTAL = 1;
 
 function Screens() {
   const flow = useFlow();
   return (
     <>
       {flow.revealed >= 1 && <LoginScreen index={0} />}
-      {flow.revealed >= 2 && (
-        <VehicleScreen
-          index={1}
-          question="Which vehicle are we quoting today?"
-        />
-      )}
-      {flow.finished && <ResultScreen />}
+      {flow.finished && <DashboardScreen />}
     </>
   );
 }
