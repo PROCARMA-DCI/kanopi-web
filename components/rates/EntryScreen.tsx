@@ -23,7 +23,7 @@ export function EntryScreen({ selected, onSelect }: EntryScreenProps) {
       className="flex min-h-[100dvh] w-full snap-start snap-always flex-col bg-[#fff9f1]"
     >
       {/* Header: logo left, Gaia avatar centred */}
-      <header className="relative flex h-[98px] items-center px-10 shadow-[0px_4px_20px_0px_rgba(129,74,0,0.1)]">
+      <header className="sticky top-0 z-30 flex h-[98px] items-center bg-[#fff9f1] px-10 shadow-[0px_4px_20px_0px_rgba(129,74,0,0.1)]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/images/logo.svg" alt="Kanopi" className="h-[44px] w-auto" />
         <span className="absolute left-1/2 top-1/2 flex size-[90px] -translate-x-1/2 -translate-y-1/3 items-center justify-center rounded-full border-2 border-white bg-gradient-to-br from-[#e9f4cf] to-[#c8ff3e] text-[34px] font-bold text-[#2d3d00] shadow-[0px_6px_18px_rgba(129,74,0,0.12)]">

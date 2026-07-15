@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { ScreenShell } from "../wizard/ScreenShell";
-import { useFlow } from "../wizard/FlowProvider";
 import { CoverageCard } from "../CoverageCard";
 import { COVERAGES } from "../data/coverages";
+import { useFlow } from "../wizard/FlowProvider";
+import { ScreenShell } from "../wizard/ScreenShell";
 
 /**
  * No-account · Step 3 — pick a coverage from the list.

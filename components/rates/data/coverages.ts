@@ -1,45 +1,50 @@
 /**
  * Coverage options shown on the "Your Coverage" screen.
  *
- * This is STATIC placeholder data today, shaped exactly like what the API will
- * return later. To go live, replace `COVERAGES` with a fetch (server component,
- * route handler, or SWR/React Query) — the screen already renders whatever
- * length the list is, so nothing else needs to change.
+ * STATIC placeholder data today, shaped like the API response to come. To go
+ * live, replace `COVERAGES` with a fetch — the screen renders whatever length
+ * the list is, so nothing else changes.
  */
 export interface Coverage {
   id: string;
+  /** Plan name, e.g. "Powertrain Plus". */
   name: string;
-  /** Monthly price in USD. */
+  /** Small line under the name, e.g. "Service Contract". */
+  subtitle: string;
+  /** Green highlight line, e.g. "3 Year or 36,000 Miles". */
+  highlight: string;
+  /** Deductible amount in USD. */
+  deductible: number;
+  /** "Your Price" total in USD. */
   price: number;
-  /** e.g. "60 mo / 60k mi". */
-  term: string;
-  /** Short selling points shown on the card. */
-  highlights: string[];
   /** Optional badge, e.g. "Most popular". */
   badge?: string;
 }
 
 export const COVERAGES: Coverage[] = [
   {
-    id: "essential",
-    name: "Essential",
-    price: 39,
-    term: "48 mo / 50k mi",
-    highlights: ["Powertrain & engine", "24/7 roadside", "Nationwide repair network"],
+    id: "powertrain-plus",
+    name: "Powertrain Plus",
+    subtitle: "Service Contract",
+    highlight: "3 Year or 36,000 Miles",
+    deductible: 500,
+    price: 1205,
   },
   {
-    id: "preferred",
-    name: "Preferred",
-    price: 48,
-    term: "60 mo / 60k mi",
-    highlights: ["Everything in Essential", "Electrical & A/C", "Rental car reimbursement"],
+    id: "preferred-care",
+    name: "Preferred Care",
+    subtitle: "Service Contract",
+    highlight: "4 Year or 48,000 Miles",
+    deductible: 250,
+    price: 1650,
     badge: "Most popular",
   },
   {
-    id: "premium",
-    name: "Premium",
-    price: 62,
-    term: "72 mo / 75k mi",
-    highlights: ["Everything in Preferred", "Tires & wheels", "Trip interruption cover"],
+    id: "premium-shield",
+    name: "Premium Shield",
+    subtitle: "Service Contract",
+    highlight: "5 Year or 60,000 Miles",
+    deductible: 100,
+    price: 2090,
   },
 ];
