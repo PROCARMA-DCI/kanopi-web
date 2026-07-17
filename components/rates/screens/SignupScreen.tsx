@@ -32,8 +32,13 @@ export function SignupScreen({ index }: { index: number }) {
   const passwordMatch = password !== "" && password === confirmPassword;
 
   const requirements = [
+    firstName.trim() !== "",
+    lastName.trim() !== "",
     emailMatch,
     passwordMatch,
+    streetAddress.trim() !== "",
+    city.trim() !== "",
+    state.trim() !== "",
     phone.trim() !== "",
     agreeVsc, // consent to terms is required
     signature !== "",
@@ -53,7 +58,13 @@ export function SignupScreen({ index }: { index: number }) {
       nextLabel={index === flow.total - 1 ? "See my rate" : "Next"}
       onNext={() =>
         flow.next(index, {
+          firstName,
+          lastName,
           email,
+          streetAddress,
+          apt,
+          city,
+          state,
           phone,
           agreeVsc,
           agreeSms,
@@ -64,71 +75,81 @@ export function SignupScreen({ index }: { index: number }) {
       onBack={() => flow.back(index)}
     >
       <div className="flex flex-col gap-6">
-        {/* Account fields */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {/* Account + address fields on a 4-col grid so the street field can
+            span 3/4 while Apt takes 1/4 (like the old Contact screen). */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
           <Input
+            className="sm:col-span-2"
             placeholder="First Name"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
           />
           <Input
+            className="sm:col-span-2"
             placeholder="Last Name"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
           />
           <Input
+            className="sm:col-span-2"
             type="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
           <Input
+            className="sm:col-span-2"
             type="email"
             placeholder="Confirm Email"
             value={confirmEmail}
             onChange={(e) => setConfirmEmail(e.target.value)}
           />
           <Input
+            className="sm:col-span-2"
             type="password"
             placeholder="Create Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
           <Input
+            className="sm:col-span-2"
             type="password"
             placeholder="Confirm Password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
-          {/* Street takes 3/4, Apt takes 1/4 on the same row */}
+          {/* Street 3/4, Apt 1/4 */}
           <Input
+            className="sm:col-span-3"
             type="text"
             placeholder="Street address"
             value={streetAddress}
             onChange={(e) => setStreetAddress(e.target.value)}
           />
           <Input
+            className="sm:col-span-1"
             type="text"
             placeholder="Apt/Unit #"
             value={apt}
             onChange={(e) => setApt(e.target.value)}
           />
-          {/* City and State split the next row */}
+          {/* City + State split the next row */}
           <Input
+            className="sm:col-span-2"
             type="text"
             placeholder="City"
             value={city}
             onChange={(e) => setCity(e.target.value)}
           />
-          <div>
-            <Select
-              placeholder="State"
-              options={states}
-              value={state}
-              onChange={setState}
-            />
-          </div>
+          <Select
+            className="sm:col-span-2"
+            placeholder="State"
+            options={states}
+            value={state}
+            onChange={setState}
+          />
           <Input
+            className="sm:col-span-2"
             type="tel"
             placeholder="Phone #"
             value={phone}

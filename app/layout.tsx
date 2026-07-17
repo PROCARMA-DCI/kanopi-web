@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Caveat, Lato, Poppins } from "next/font/google";
 import "./globals.css";
 import LayoutProvider from "./providers/LayoutContext";
+import LoaderProvider from "./providers/LoaderContext";
 import ScrollProvider from "./ScrollProvider";
 
 const lato = Lato({
@@ -29,6 +30,9 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: "Kanopi",
   description: "",
+  icons: {
+    icon: "/images/logo.svg",
+  },
 };
 
 export default function RootLayout({
@@ -42,10 +46,13 @@ export default function RootLayout({
       className={`${lato.variable} ${caveat.variable} ${poppins.variable} h-full antialiased snap-y snap-proximity`}
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
-        {/* App-wide smooth scroll — any client component can call useScroll(). */}
-        <LayoutProvider>
-          <ScrollProvider>{children}</ScrollProvider>
-        </LayoutProvider>
+        {/* Loader outermost so any provider/component can trigger the overlay;
+            then app data + app-wide smooth scroll. */}
+        <LoaderProvider>
+          <LayoutProvider>
+            <ScrollProvider>{children}</ScrollProvider>
+          </LayoutProvider>
+        </LoaderProvider>
       </body>
     </html>
   );

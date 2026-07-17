@@ -1,6 +1,7 @@
 "use client";
 import { fetching } from "@/lib/api/client";
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { useLoader } from "./LoaderContext";
 
 // Shape of one row returned by /api/kanopiDealersAssignedToGroup.
 
@@ -42,6 +43,7 @@ const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({
   const [DealerName, setDealerName] = useState("");
   const [makes, setMakes] = useState<MakeType[]>([]);
   const [models, setModels] = useState<ModelType[]>([]);
+  const { setLoading } = useLoader();
 
   useEffect(() => {
     // `active` guards against setState after unmount and against React 18/19's
@@ -80,6 +82,7 @@ const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({
     const res = await fetching<MakeType[]>({
       url: "/api/contracts/getMakes",
       method: "GET",
+      setLoading, // shows the global loader overlay while makes load
     });
 
     if (!res.ok || !res.data?.length) {

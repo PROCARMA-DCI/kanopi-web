@@ -1,7 +1,12 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-/** Rate-flow text input — matches the 79px rounded field in the Figma design. */
+/**
+ * Rate-flow text input — shadcn-style, driven by the semantic theme tokens
+ * (see globals.css): border-input / bg-background / text-foreground /
+ * placeholder-muted-foreground / focus ring in primary. Change the palette in
+ * globals.css and every input follows.
+ */
 export const Input = React.forwardRef<
   HTMLInputElement,
   React.InputHTMLAttributes<HTMLInputElement>
@@ -9,11 +14,12 @@ export const Input = React.forwardRef<
   <input
     ref={ref}
     className={cn(
-      "h-[79px] w-full rounded-2xl border border-[rgba(125,135,96,0.5)] bg-[#fff9f1] px-5 text-[20px] text-[#2d3d00]",
-      "placeholder:text-[#7d8760] placeholder:font-normal outline-none",
+      "h-[79px] w-full rounded-2xl border border-input bg-background px-5 text-[20px] text-foreground",
+      "placeholder:font-normal placeholder:text-muted-foreground outline-none",
       "transition-[border-color,box-shadow] duration-200",
-      "focus:border-[#a6e00c] focus:shadow-[0px_2px_10px_rgba(166,224,12,0.25)]",
-      className
+      "focus:border-primary focus:shadow-[0px_2px_10px_rgba(166,224,12,0.25)]",
+      "disabled:cursor-not-allowed disabled:opacity-60",
+      className,
     )}
     {...props}
   />

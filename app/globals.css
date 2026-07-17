@@ -8,6 +8,27 @@
   --color-surface: #121212;
   --color-on-surface: #ffffff;
 
+  /* ── Semantic UI theme (shadcn-style, Kanopi palette) ──────────────────────
+   * These drive the reusable UI primitives (Input, Select, Button, Loader…).
+   * Change a value here and every component that uses the token updates — and
+   * you can add a dark theme later by overriding these under
+   * :root[data-theme="dark"] { … } without touching any component. */
+  --background: #fff9f1;
+  --foreground: #2d3d00;
+  --card: #fffaf3;
+  --card-foreground: #2d3d00;
+  --primary: #a6e00c;
+  --primary-foreground: #2d3d00;
+  --secondary: #2d3d00;
+  --secondary-foreground: #fff9f1;
+  --accent: #c8ff3e;
+  --accent-foreground: #2d3d00;
+  --muted: rgba(125, 135, 96, 0.12);
+  --muted-foreground: #7d8760;
+  --border: rgba(125, 135, 96, 0.5);
+  --input: rgba(125, 135, 96, 0.5);
+  --ring: #a6e00c;
+
   /* Typography */
   --font-body: var(--font-lato), sans-serif;
   --font-accent: var(--font-caveat), cursive;
@@ -35,8 +56,21 @@
 }
 
 @theme inline {
-  --color-background: var(--color-bg);
-  --color-foreground: var(--color-text);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
   --font-sans: var(--font-body);
 }
 
@@ -1144,6 +1178,27 @@ h6 {
 .anim-center-2,
 .anim-left {
   will-change: transform, opacity;
+}
+
+/* ── Thin, themed scrollbars ───────────────────────────────────────────────*/
+* {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: color-mix(in srgb, var(--muted-foreground) 55%, transparent)
+    transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--muted-foreground) 45%, transparent);
+  border-radius: 9999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
 }
 
 /* Custom <Select> dropdown open animation (see components/ui/select.tsx). */
