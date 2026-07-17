@@ -1145,3 +1145,15 @@ h6 {
 .anim-left {
   will-change: transform, opacity;
 }
+
+/* Custom <Select> dropdown open animation (see components/ui/select.tsx). */
+@keyframes rate-dropdown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

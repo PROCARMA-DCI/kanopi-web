@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { useState } from "react";
+import { states } from "../data/vehicle";
 import { SignaturePad } from "../SignaturePad";
 import { useFlow } from "../wizard/FlowProvider";
 import { ScreenShell } from "../wizard/ScreenShell";
@@ -10,11 +12,16 @@ import { ScreenShell } from "../wizard/ScreenShell";
 /** No-account · About You — account details, agreements and signature. */
 export function SignupScreen({ index }: { index: number }) {
   const flow = useFlow();
-
+  const [firstName, setFirstName] = useState(flow.data.firstName as string);
+  const [lastName, setLastName] = useState(flow.data.lastName as string);
   const [email, setEmail] = useState("");
   const [confirmEmail, setConfirmEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [streetAddress, setStreetAddress] = useState("");
+  const [apt, setApt] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
   const [phone, setPhone] = useState("");
   const [agreeVsc, setAgreeVsc] = useState(false);
   const [agreeSms, setAgreeSms] = useState(false);
@@ -60,6 +67,16 @@ export function SignupScreen({ index }: { index: number }) {
         {/* Account fields */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Input
+            placeholder="First Name"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+          />
+          <Input
+            placeholder="Last Name"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+          />
+          <Input
             type="email"
             placeholder="Email"
             value={email}
@@ -83,6 +100,34 @@ export function SignupScreen({ index }: { index: number }) {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
+          {/* Street takes 3/4, Apt takes 1/4 on the same row */}
+          <Input
+            type="text"
+            placeholder="Street address"
+            value={streetAddress}
+            onChange={(e) => setStreetAddress(e.target.value)}
+          />
+          <Input
+            type="text"
+            placeholder="Apt/Unit #"
+            value={apt}
+            onChange={(e) => setApt(e.target.value)}
+          />
+          {/* City and State split the next row */}
+          <Input
+            type="text"
+            placeholder="City"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+          />
+          <div>
+            <Select
+              placeholder="State"
+              options={states}
+              value={state}
+              onChange={setState}
+            />
+          </div>
           <Input
             type="tel"
             placeholder="Phone #"
@@ -93,7 +138,9 @@ export function SignupScreen({ index }: { index: number }) {
 
         {/* Inline mismatch hints */}
         {confirmEmail !== "" && !emailMatch && (
-          <p className="-mt-2 text-[13px] text-red-600">Emails don&apos;t match.</p>
+          <p className="-mt-2 text-[13px] text-red-600">
+            Emails don&apos;t match.
+          </p>
         )}
         {confirmPassword !== "" && !passwordMatch && (
           <p className="-mt-2 text-[13px] text-red-600">
@@ -107,11 +154,12 @@ export function SignupScreen({ index }: { index: number }) {
             I agree to the VSC terms and conditions.
           </Agreement>
           <Agreement checked={agreeSms} onChange={setAgreeSms}>
-            I agree to receive SMS messages about my service contract and updates.
+            I agree to receive SMS messages about my service contract and
+            updates.
           </Agreement>
           <Agreement checked={agreeEmail} onChange={setAgreeEmail}>
-            I agree to receive email communications about my service contract and
-            updates.
+            I agree to receive email communications about my service contract
+            and updates.
           </Agreement>
         </div>
 
@@ -121,11 +169,11 @@ export function SignupScreen({ index }: { index: number }) {
         {/* Legal consent */}
         <p className="text-[12px] leading-[18px] text-[#7d8760]">
           By clicking the button, you agree to Procarma utilizing automated
-          technology to contact you via phone, email, and text using the provided
-          contact information, including your wireless number if provided, for
-          matters related to maintenance, auto protection or, in California,
-          mechanical breakdown insurance. You also acknowledge and accept the
-          Procarma{" "}
+          technology to contact you via phone, email, and text using the
+          provided contact information, including your wireless number if
+          provided, for matters related to maintenance, auto protection or, in
+          California, mechanical breakdown insurance. You also acknowledge and
+          accept the Procarma{" "}
           <a
             href="https://mypcp.us/term-condition"
             target="_blank"
@@ -143,9 +191,9 @@ export function SignupScreen({ index }: { index: number }) {
           >
             Terms and Conditions
           </a>
-          . Your consent is not required for making a purchase, and you retain the
-          right to withdraw your consent at any time. Standard message and data
-          rates may apply.
+          . Your consent is not required for making a purchase, and you retain
+          the right to withdraw your consent at any time. Standard message and
+          data rates may apply.
         </p>
       </div>
     </ScreenShell>

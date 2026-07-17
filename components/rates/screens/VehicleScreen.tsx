@@ -65,21 +65,24 @@ export function VehicleScreen({
           placeholder="Make"
           options={makeOptions}
           value={make}
-          onChange={(e) => setMake(e.target.value)}
+          onChange={(v) => {
+            setMake(v);
+            setModel(""); // model depends on make — clear the stale selection
+          }}
         />
         <Select
           placeholder="Model"
           options={modelOptions}
           disabled={!make}
           value={model}
-          onChange={(e) => setModel(e.target.value)}
+          onChange={setModel}
         />
 
         <Select
           placeholder="Year"
           options={CAR_YEARS}
           value={year}
-          onChange={(e) => setYear(e.target.value)}
+          onChange={setYear}
         />
         <Input
           placeholder="Current mileage"

@@ -63,7 +63,7 @@ export function ContactScreen({ index }: { index: number }) {
             placeholder="State"
             options={states}
             value={state}
-            onChange={(e) => setState(e.target.value)}
+            onChange={setState}
           />
         </div>
       </div>
