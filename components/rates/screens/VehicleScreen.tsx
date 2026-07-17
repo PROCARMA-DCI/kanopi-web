@@ -1,9 +1,10 @@
 "use client";
 
+import { useLayout } from "@/app/providers/LayoutContext";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { useState } from "react";
-import { CAR_MAKES, CAR_YEARS } from "../data/vehicle";
+import { useEffect, useState } from "react";
+import { CAR_YEARS } from "../data/vehicle";
 import { useFlow } from "../wizard/FlowProvider";
 import { ScreenShell } from "../wizard/ScreenShell";
 
@@ -23,11 +24,23 @@ export function VehicleScreen({
   question = "Let's personalize a coverage for your vehicle.",
 }: VehicleScreenProps) {
   const flow = useFlow();
-  const [make, setMake] = useState("");
+  const { makes, fetchModelAgainstMake, models } = useLayout();
+  const [make, setMake] = useState<string>("");
   const [model, setModel] = useState("");
   const [year, setYear] = useState("");
   const [mileage, setMileage] = useState("");
 
+  useEffect(() => {
+    const makeId = makes.find((m) => m.name === make)?.id;
+    if (makeId) {
+      fetchModelAgainstMake(makeId);
+    }
+  }, [make]);
+
+  // Use the makes fetched from the API when available; fall back to the
+  // static list until the endpoint is wired up.
+  const makeOptions = makes.length ? makes.map((m) => m.name) : [];
+  const modelOptions = models.length ? models.map((m) => m.ModelName) : [];
   const filled = [make, model, year, mileage].filter(
     (v) => v.trim() !== "",
   ).length;
@@ -50,15 +63,18 @@ export function VehicleScreen({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 max-w-[684px] mx-auto">
         <Select
           placeholder="Make"
-          options={CAR_MAKES}
+          options={makeOptions}
           value={make}
           onChange={(e) => setMake(e.target.value)}
         />
-        <Input
+        <Select
           placeholder="Model"
+          options={modelOptions}
+          disabled={!make}
           value={model}
           onChange={(e) => setModel(e.target.value)}
         />
+
         <Select
           placeholder="Year"
           options={CAR_YEARS}

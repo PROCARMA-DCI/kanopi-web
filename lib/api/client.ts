@@ -38,17 +38,25 @@ export const objectToFormData = (
 export interface ApiResult<T> {
   ok: boolean;
   status: number;
-  /** The backend envelope's `data` payload (this is the T you asked for). */
+  /** Convenience alias for the backend envelope's `data` (the T you asked for). */
   message?: T;
-
+  data?: T;
+  /** The backend envelope's `detail` text (success or error message). */
+  detail?: string;
   /** The backend envelope's `success` flag (1 / 0). */
   success?: 1 | 0 | number;
+  /**
+   * Any other field the backend returned (e.g. `data`, `total`, or a raw
+   * non-enveloped body). Access it as `res.<field>` — typed `unknown`, so
+   * cast/narrow at the call site.
+   */
+  [key: string]: unknown;
 }
 
 export interface FetchParams {
   /** Same-origin route path, e.g. "/api/category" or "/api/category/5". */
   url: string;
-  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+  method?: "GET" | "HEAD" | "POST" | "PUT" | "PATCH" | "DELETE";
   /**
    * Request body. Pass a plain object and `fetching` decides how to send it:
    *  - `isFormdata: true`  → converted to multipart FormData internally
@@ -79,12 +87,25 @@ export async function fetching<T = unknown>({
 }: FetchParams): Promise<ApiResult<T>> {
   setLoading?.(true);
   try {
-    // Resolve body + headers. Only JSON needs an explicit Content-Type — for
-    // FormData the browser sets the multipart boundary itself.
+    // Resolve URL + body + headers. Only JSON needs an explicit Content-Type —
+    // for FormData the browser sets the multipart boundary itself.
+    let requestUrl = url;
     let requestBody: BodyInit | undefined;
     let headers: HeadersInit | undefined;
 
-    if (body instanceof FormData) {
+    // GET/HEAD requests CANNOT carry a body — fetch() throws if you try. Send
+    // the params as a query string instead (skipping undefined/null/"").
+    if (method === "GET" || method === "HEAD") {
+      if (body && !(body instanceof FormData)) {
+        const qs = new URLSearchParams();
+        for (const [key, value] of Object.entries(body)) {
+          if (value === undefined || value === null || value === "") continue;
+          qs.append(key, String(value));
+        }
+        const query = qs.toString();
+        if (query) requestUrl += (url.includes("?") ? "&" : "?") + query;
+      }
+    } else if (body instanceof FormData) {
       requestBody = body;
     } else if (body && isFormdata) {
       requestBody = objectToFormData(body);
@@ -93,20 +114,25 @@ export async function fetching<T = unknown>({
       headers = { "Content-Type": "application/json" };
     }
 
-    const res = await fetch(url, { method, headers, body: requestBody });
+    const res = await fetch(requestUrl, { method, headers, body: requestBody });
 
     // NOTE: the body stream can only be read once — parse it exactly here.
-    // The route forwards the backend envelope { success, detail, data } — so
-    // the payload we want lives in `data`, which we expose as `message`.
-    const payload = (await res.json().catch(() => null)) as {
-      message?: T;
-      success?: 1 | 0 | number;
-    } | null;
+    // Keep the body loose (any shape the backend returns), spread it through so
+    // every field is reachable as `res.<field>`, then normalise the common
+    // envelope keys. `message` aliases `data` (or a raw `message` if that's
+    // what came back).
+    const payload = (await res.json().catch(() => null)) as Record<
+      string,
+      unknown
+    > | null;
 
     return {
+      ...(payload ?? {}),
       ok: res.ok,
       status: res.status,
-      ...payload,
+      message: (payload?.data ?? payload?.message) as T | undefined,
+      detail: payload?.detail as string | undefined,
+      success: payload?.success as 1 | 0 | number | undefined,
     };
   } catch {
     return { ok: false, status: 0, success: 0 };

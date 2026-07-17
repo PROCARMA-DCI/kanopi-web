@@ -4,6 +4,7 @@
 
 export const BACKEND_API_URL =
   process.env.BACKEND_API_URL ?? "https://mypcp.us/v/1/KanopiDealer";
+export const CONTRACT_API_URL = "https://mypcp.us/webservices/";
 
 export class ApiError extends Error {
   status: number;

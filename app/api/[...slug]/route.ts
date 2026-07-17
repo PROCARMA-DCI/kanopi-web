@@ -2,7 +2,11 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { getAccessToken } from "@/app/auth/session";
-import { BACKEND_API_URL, backendEnvelope } from "@/lib/api/server";
+import {
+  BACKEND_API_URL,
+  backendEnvelope,
+  CONTRACT_API_URL,
+} from "@/lib/api/server";
 
 /**
  * Generic pass-through proxy: /api/<slug> → FastAPI's /<slug>, same method,
@@ -30,7 +34,7 @@ import { BACKEND_API_URL, backendEnvelope } from "@/lib/api/server";
  */
 const RESOURCE_BACKENDS: Record<string, string> = {
   // Example — a resource served by a DIFFERENT backend:
-  // weather: process.env.OTHER_API_URL ?? "",
+  contracts: CONTRACT_API_URL,
 };
 
 async function proxy(request: NextRequest, slugParts: string[]) {

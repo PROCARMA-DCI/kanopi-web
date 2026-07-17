@@ -1,16 +1,3 @@
-/** Vehicle dropdown options. Swap for API data when available. */
-
-export const CAR_MAKES = [
-  "Chevrolet",
-  "Ford",
-  "Toyota",
-  "Honda",
-  "Tesla",
-  "BMW",
-  "Nissan",
-  "Subaru",
-];
-
 // A rolling list of recent model years (current year down to 25 years back).
 // Kept as a plain constant so it's stable between server and client renders.
 export const CAR_YEARS = Array.from({ length: 26 }, (_, i) => String(2025 - i));
