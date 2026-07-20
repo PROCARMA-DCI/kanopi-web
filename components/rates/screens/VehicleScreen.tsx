@@ -2,7 +2,7 @@
 
 import { useLayout } from "@/app/providers/LayoutContext";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import { SelectField } from "@/components/ui/select-field";
 import VinQrCodeRead from "@/components/VinQrCodeRead";
 import { useEffect, useMemo, useState } from "react";
 import { generateYearsArray } from "../data/vehicle";
@@ -95,7 +95,7 @@ export function VehicleScreen({
             if (decodedYear) setYear(decodedYear);
           }}
         />
-        <Select
+        <SelectField
           placeholder="Make"
           options={makeOptions}
           value={make}
@@ -104,7 +104,7 @@ export function VehicleScreen({
             setModel(""); // model depends on make — clear the stale selection
           }}
         />
-        <Select
+        <SelectField
           placeholder="Model"
           options={modelOptions}
           disabled={!make}
@@ -112,7 +112,7 @@ export function VehicleScreen({
           onChange={setModel}
         />
 
-        <Select
+        <SelectField
           placeholder="Year"
           options={yearslist}
           value={year}

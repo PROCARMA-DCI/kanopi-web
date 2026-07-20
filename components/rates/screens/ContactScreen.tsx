@@ -1,7 +1,7 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import { SelectField } from "@/components/ui/select-field";
 import { useState } from "react";
 import { states } from "../data/vehicle";
 import { useFlow } from "../wizard/FlowProvider";
@@ -59,7 +59,7 @@ export function ContactScreen({ index }: { index: number }) {
           onChange={(e) => setCity(e.target.value)}
         />
         <div className="sm:col-span-2">
-          <Select
+          <SelectField
             placeholder="State"
             options={states}
             value={state}

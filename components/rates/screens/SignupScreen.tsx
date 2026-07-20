@@ -2,7 +2,7 @@
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import { SelectField } from "@/components/ui/select-field";
 import { useState } from "react";
 import { states } from "../data/vehicle";
 import { SignaturePad } from "../SignaturePad";
@@ -141,7 +141,7 @@ export function SignupScreen({ index }: { index: number }) {
             value={city}
             onChange={(e) => setCity(e.target.value)}
           />
-          <Select
+          <SelectField
             className="sm:col-span-2"
             placeholder="State"
             options={states}
