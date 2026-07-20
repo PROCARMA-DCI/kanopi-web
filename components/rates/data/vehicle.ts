@@ -1,6 +1,17 @@
 // A rolling list of recent model years (current year down to 25 years back).
 // Kept as a plain constant so it's stable between server and client renders.
-export const CAR_YEARS = Array.from({ length: 26 }, (_, i) => String(2025 - i));
+
+export function generateYearsArray() {
+  const currentYear = new Date().getFullYear();
+  const startYear = 1924;
+  const yearsArray = [];
+
+  for (let year = startYear; year <= currentYear; year++) {
+    yearsArray.push(year);
+  }
+
+  return yearsArray;
+}
 
 export const states = [
   "AL",

@@ -24,7 +24,7 @@ interface LayoutContextValue extends initialValues {
   makes: MakeType[];
   setMakes: React.Dispatch<React.SetStateAction<MakeType[]>>;
   fetchMakes: () => Promise<void>;
-  fetchModelAgainstMake: (make_id: string) => Promise<void>;
+  fetchModelAgainstMake: (make_id: string) => Promise<ModelType[] | undefined>;
   models: ModelType[];
 }
 
@@ -97,6 +97,7 @@ const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({
     const res = await fetching<ModelType[]>({
       url: "/api/contracts/getModels/" + make_id,
       method: "GET",
+      setLoading,
     });
 
     if (!res.ok || !res.data?.length) {
@@ -104,7 +105,18 @@ const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({
       return;
     }
     setModels(res.data);
+    return res.data;
   };
+  const fetchCheckVinWDetail = async (vin: string, email: string) => {
+    const res = await fetching({
+      url: "/api/checkVinWithDetail",
+      method: "POST",
+      body: { vin, email },
+      setLoading,
+    });
+    return res;
+  };
+
   return (
     <LayoutContext.Provider
       value={{

@@ -1,9 +1,9 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import gsap from "gsap";
 import { useEffect, useRef, type ReactNode } from "react";
-import { cn } from "@/lib/utils";
 import { GaiaBubble } from "../GaiaBubble";
 import { RatesHeader } from "../RatesHeader";
 
@@ -196,11 +196,17 @@ export function ScreenShell({
           <div data-stagger>{children}</div>
 
           <div data-stagger className="grid grid-cols-2 gap-4">
-            <Button type="button" variant="muted" onClick={onBack}>
+            <Button
+              type="button"
+              variant="muted"
+              onClick={onBack}
+              className="cursor-pointer hover:bg-[#bec0a8]"
+            >
               Back
             </Button>
             <Button
               type="button"
+              className="cursor-pointer"
               variant={canAdvance ? "primary" : "muted"}
               disabled={!canAdvance}
               onClick={onNext}

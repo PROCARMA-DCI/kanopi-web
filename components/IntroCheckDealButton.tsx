@@ -6,7 +6,8 @@ import { useScroll } from "@/app/ScrollProvider";
  * The hero "CHECK YOUR DEAL" button.
  *
  * It's a client component purely so it can use the shared scroll provider:
- * clicking it smoothly scrolls down into the rate-check flow (<div id="check-rates">).
+ * clicking it smoothly scrolls down to the GET COVERED section (the rates flow
+ * itself stays hidden until that section's button is clicked).
  * Keeps the same classes as before so the existing styling is untouched.
  */
 export function IntroCheckDealButton() {
@@ -16,7 +17,7 @@ export function IntroCheckDealButton() {
     <button
       type="button"
       className="intro__btn textBtn btn"
-      onClick={() => scrollTo("check-rates")}
+      onClick={() => scrollTo("get-covered")}
     >
       CHECK YOUR DEAL
     </button>

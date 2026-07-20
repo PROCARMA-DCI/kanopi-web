@@ -35,6 +35,7 @@ import {
 const RESOURCE_BACKENDS: Record<string, string> = {
   // Example — a resource served by a DIFFERENT backend:
   contracts: CONTRACT_API_URL,
+  vindecode: "https://fastapi.mypcp.us",
 };
 
 async function proxy(request: NextRequest, slugParts: string[]) {

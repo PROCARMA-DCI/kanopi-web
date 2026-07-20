@@ -9,7 +9,7 @@ import { FlowProvider, useFlow } from "../wizard/FlowProvider";
 
 // The no-account journey, screen by screen. To add / reorder a screen, edit
 // this list and bump TOTAL — each screen is its own independent component.
-const TOTAL = 6;
+const TOTAL = 4;
 
 function Screens() {
   const flow = useFlow();
