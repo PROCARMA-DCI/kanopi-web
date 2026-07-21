@@ -24,6 +24,7 @@ interface LoaderContextValue {
    *   await fetching({ url, setLoading });
    */
   setLoading: (value: boolean) => void;
+  batchLoading?: (value: string) => void;
 }
 
 const LoaderContext = createContext<LoaderContextValue | null>(null);
@@ -47,11 +48,15 @@ export function LoaderProvider({ children }: { children: ReactNode }) {
     (value: boolean) => (value ? show() : hide()),
     [show, hide],
   );
+  const batchLoading = useCallback(
+    (value: string) => (value ? show() : hide()),
+    [show, hide],
+  );
 
   const loading = count > 0;
   const value = useMemo<LoaderContextValue>(
-    () => ({ loading, show, hide, setLoading }),
-    [loading, show, hide, setLoading],
+    () => ({ loading, show, hide, setLoading, batchLoading }),
+    [loading, show, hide, setLoading, batchLoading],
   );
 
   return (

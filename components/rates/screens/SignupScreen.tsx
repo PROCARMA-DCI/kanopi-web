@@ -1,8 +1,10 @@
 "use client";
 
+import { useLoader } from "@/app/providers/LoaderContext";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { SelectField } from "@/components/ui/select-field";
+import { fetching } from "@/lib/api/client";
 import { useState } from "react";
 import { states } from "../data/vehicle";
 import { SignaturePad } from "../SignaturePad";
@@ -12,6 +14,7 @@ import { ScreenShell } from "../wizard/ScreenShell";
 /** No-account · About You — account details, agreements and signature. */
 export function SignupScreen({ index }: { index: number }) {
   const flow = useFlow();
+  const { setLoading } = useLoader();
   const [firstName, setFirstName] = useState(flow.data.firstName as string);
   const [lastName, setLastName] = useState(flow.data.lastName as string);
   const [email, setEmail] = useState("");
@@ -56,7 +59,18 @@ export function SignupScreen({ index }: { index: number }) {
       question="Awesome! Now let's get to know a little more about you."
       canAdvance={canAdvance}
       nextLabel={index === flow.total - 1 ? "See my rate" : "Next"}
-      onNext={() =>
+      onNext={async () => {
+        // Check whether this vehicle's VIN already has a contract on file —
+        // ExistingPlanScreen (rendered by NoAccountFlow) reads
+        // `contractCheck` off flow.data to decide what to show next.
+        const res = await fetching({
+          url: "/api/checkVinWithDetail",
+          method: "POST",
+          isFormdata: true,
+          body: { email, vin: flow.data.vin as string },
+          setLoading,
+        });
+
         flow.next(index, {
           firstName,
           lastName,
@@ -70,8 +84,9 @@ export function SignupScreen({ index }: { index: number }) {
           agreeSms,
           agreeEmail,
           signature,
-        })
-      }
+          contractCheck: res,
+        });
+      }}
       onBack={() => flow.back(index)}
     >
       <div className="flex flex-col gap-6">

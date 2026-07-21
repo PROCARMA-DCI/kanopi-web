@@ -48,3 +48,38 @@ export const COVERAGES: Coverage[] = [
     price: 2090,
   },
 ];
+
+/**
+ * One rate option as returned by getVehicleRates
+ * (`data.NonCommercialVehicleRates[]`) — only the fields CoverageScreen
+ * actually needs; the backend sends a lot more that we don't use.
+ */
+export interface VehicleRate {
+  ReserveRateId: number;
+  CoverageName: string;
+  ProductName?: string;
+  ProductTypeName?: string;
+  TermMonths?: number;
+  TermMiles?: number;
+  Deductible?: number;
+  MinimumRetail?: number | null;
+  TotalAdminCost?: number;
+  RateCost?: number;
+}
+
+/** Maps one getVehicleRates rate option onto the shape CoverageCard renders. */
+export function mapVehicleRateToCoverage(rate: VehicleRate): Coverage {
+  const years = rate.TermMonths ? Math.round(rate.TermMonths / 12) : null;
+  const miles = rate.TermMiles?.toLocaleString("en-US");
+  const highlight =
+    years && miles ? `${years} Year or ${miles} Miles` : rate.ProductName ?? "";
+
+  return {
+    id: String(rate.ReserveRateId),
+    name: rate.CoverageName,
+    subtitle: rate.ProductTypeName ?? rate.ProductName ?? "Service Contract",
+    highlight,
+    deductible: rate.Deductible ?? 0,
+    price: rate.MinimumRetail ?? rate.TotalAdminCost ?? rate.RateCost ?? 0,
+  };
+}

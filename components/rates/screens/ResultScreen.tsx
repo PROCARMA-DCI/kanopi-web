@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { RatesHeader } from "../RatesHeader";
 import { GaiaBubble } from "../GaiaBubble";
 import { useFlow } from "../wizard/FlowProvider";
-import { COVERAGES } from "../data/coverages";
+import { COVERAGES, type Coverage } from "../data/coverages";
 
 /**
  * Shared closing screen. Reads the chosen coverage out of the flow's collected
@@ -17,8 +17,12 @@ export function ResultScreen() {
   const rootRef = useRef<HTMLElement>(null);
   const priceRef = useRef<HTMLSpanElement>(null);
 
+  // CoverageScreen passes the full coverage it fetched (real rate or demo
+  // fallback) — prefer that over the static list, which only has the demo ids.
   const chosen =
-    COVERAGES.find((c) => c.id === flow.data.coverageId) ?? COVERAGES[0];
+    (flow.data.selectedCoverage as Coverage | null) ??
+    COVERAGES.find((c) => c.id === flow.data.coverageId) ??
+    COVERAGES[0];
   const price = chosen.price;
 
   useEffect(() => {

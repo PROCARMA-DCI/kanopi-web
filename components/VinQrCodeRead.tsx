@@ -73,7 +73,7 @@ export default function VinQrCodeRead({
       (m) => m.name.toLowerCase() === decoded.make?.toLowerCase(),
     );
     if (!matchedMake) {
-      setVinError("Make not found for that VIN — please select it manually.");
+      setVinError("Make not found for that VIN — you are selecting manually.");
       onDecoded({ year: decoded.year ? String(decoded.year) : undefined });
       return;
     }
@@ -177,7 +177,9 @@ export default function VinQrCodeRead({
           </svg>
         </button>
       </div>
-      {vinError && <p className="mt-1 text-[13px] text-red-600">{vinError}</p>}
+      {vinError && (
+        <p className="mt-1 text-[13px] text-yellow-600">{vinError}</p>
+      )}
 
       {scannerOpen && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-black/80 p-6">

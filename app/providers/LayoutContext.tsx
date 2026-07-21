@@ -43,7 +43,7 @@ const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({
   const [DealerName, setDealerName] = useState("");
   const [makes, setMakes] = useState<MakeType[]>([]);
   const [models, setModels] = useState<ModelType[]>([]);
-  const { setLoading } = useLoader();
+  const { setLoading, batchLoading } = useLoader();
 
   useEffect(() => {
     // `active` guards against setState after unmount and against React 18/19's
@@ -94,6 +94,7 @@ const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({
   const fetchModelAgainstMake = async (make_id: string) => {
     // GET — params go in the query string (fetching handles that). This
     // endpoint returns the list under `data`.
+    batchLoading("Loading models");
     const res = await fetching<ModelType[]>({
       url: "/api/contracts/getModels/" + make_id,
       method: "GET",
