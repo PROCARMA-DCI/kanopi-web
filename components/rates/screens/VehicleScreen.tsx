@@ -90,11 +90,12 @@ export function VehicleScreen({
             model: decodedModel,
             year: decodedYear,
           }) => {
-            if (decodedMake) setMake(decodedMake);
-            if (decodedModel) setModel(decodedModel);
-            if (decodedYear) setYear(decodedYear);
+            setMake(decodedMake || "");
+            setModel(decodedModel || "");
+            setYear(decodedYear || "");
           }}
         />
+
         <SelectField
           placeholder="Make"
           options={makeOptions}

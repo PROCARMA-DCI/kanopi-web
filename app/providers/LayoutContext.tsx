@@ -93,29 +93,25 @@ const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({
   };
   const fetchModelAgainstMake = async (make_id: string) => {
     // GET — params go in the query string (fetching handles that). This
-    // endpoint returns the list under `data`.
-    batchLoading("Loading models");
-    const res = await fetching<ModelType[]>({
-      url: "/api/contracts/getModels/" + make_id,
-      method: "GET",
-      setLoading,
-    });
+    // endpoint returns the list under `data`. Named (not setLoading) so it
+    // shows "Loading models…" instead of the plain full-screen spinner —
+    // `finally` guarantees it clears even if the request fails.
+    batchLoading("Loading models", true);
+    try {
+      const res = await fetching<ModelType[]>({
+        url: "/api/contracts/getModels/" + make_id,
+        method: "GET",
+      });
 
-    if (!res.ok || !res.data?.length) {
-      console.error("Failed to load makes", res.status);
-      return;
+      if (!res.ok || !res.data?.length) {
+        console.error("Failed to load makes", res.status);
+        return;
+      }
+      setModels(res.data);
+      return res.data;
+    } finally {
+      batchLoading("Loading models", false);
     }
-    setModels(res.data);
-    return res.data;
-  };
-  const fetchCheckVinWDetail = async (vin: string, email: string) => {
-    const res = await fetching({
-      url: "/api/checkVinWithDetail",
-      method: "POST",
-      body: { vin, email },
-      setLoading,
-    });
-    return res;
   };
 
   return (

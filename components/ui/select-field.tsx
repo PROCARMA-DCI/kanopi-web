@@ -35,7 +35,7 @@ export function SelectField({
   disabled,
 }: SelectFieldProps) {
   return (
-    <Select value={value || undefined} onValueChange={onChange} disabled={disabled}>
+    <Select value={value} onValueChange={onChange} disabled={disabled}>
       <SelectTrigger className={className}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>

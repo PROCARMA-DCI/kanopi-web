@@ -45,7 +45,7 @@ export default function VinQrCodeRead({
   setVin: (v: string) => void;
   onDecoded: (result: VinDecodedVehicle) => void;
 }) {
-  const { setLoading } = useLoader();
+  const { setLoading, batchLoading } = useLoader();
   const { fetchModelAgainstMake, makes } = useLayout();
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -54,13 +54,14 @@ export default function VinQrCodeRead({
 
   const handleVinCode = async (value: string) => {
     setVinError("");
+    batchLoading("Vin decoding", true);
+
     const res = await fetching<VinDecodeResult>({
       url: "/api/vindecode",
       method: "GET",
       body: { vin: value },
-      setLoading,
     });
-
+    batchLoading("Vin decoding", false);
     const decoded = res.message;
     if (!res.ok || !decoded) {
       setVinError(
