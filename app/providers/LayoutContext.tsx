@@ -1,7 +1,6 @@
 "use client";
 import { fetching } from "@/lib/api/client";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { useLoader } from "./LoaderContext";
 
 // Shape of one row returned by /api/kanopiDealersAssignedToGroup.
 
@@ -43,7 +42,6 @@ const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({
   const [DealerName, setDealerName] = useState("");
   const [makes, setMakes] = useState<MakeType[]>([]);
   const [models, setModels] = useState<ModelType[]>([]);
-  const { setLoading, batchLoading } = useLoader();
 
   useEffect(() => {
     // `active` guards against setState after unmount and against React 18/19's
@@ -78,11 +76,11 @@ const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
   const fetchMakes = async () => {
     // GET — params go in the query string (fetching handles that). This
-    // endpoint returns the list under `data`.
+    // endpoint returns the list under `data`. No setLoading needed —
+    // fetching() drives the global overlay itself by default.
     const res = await fetching<MakeType[]>({
       url: "/api/contracts/getMakes",
       method: "GET",
-      setLoading, // shows the global loader overlay while makes load
     });
 
     if (!res.ok || !res.data?.length) {
@@ -93,25 +91,21 @@ const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({
   };
   const fetchModelAgainstMake = async (make_id: string) => {
     // GET — params go in the query string (fetching handles that). This
-    // endpoint returns the list under `data`. Named (not setLoading) so it
-    // shows "Loading models…" instead of the plain full-screen spinner —
-    // `finally` guarantees it clears even if the request fails.
-    batchLoading("Loading models", true);
-    try {
-      const res = await fetching<ModelType[]>({
-        url: "/api/contracts/getModels/" + make_id,
-        method: "GET",
-      });
+    // endpoint returns the list under `data`. `badgeLoading` shows "Loading
+    // models…" instead of the plain full-screen spinner, and fetching()'s
+    // own `finally` clears it even if the request fails.
+    const res = await fetching<ModelType[]>({
+      url: "/api/contracts/getModels/" + make_id,
+      method: "GET",
+      badgeLoading: "Loading models",
+    });
 
-      if (!res.ok || !res.data?.length) {
-        console.error("Failed to load makes", res.status);
-        return;
-      }
-      setModels(res.data);
-      return res.data;
-    } finally {
-      batchLoading("Loading models", false);
+    if (!res.ok || !res.data?.length) {
+      console.error("Failed to load makes", res.status);
+      return;
     }
+    setModels(res.data);
+    return res.data;
   };
 
   return (

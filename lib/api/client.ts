@@ -1,6 +1,11 @@
 // Client-side helpers for talking to the same-origin Next API routes
 // (app/api/**). Auth is a httpOnly cookie the browser sends automatically,
 // so nothing here attaches a token — the route handlers forward it.
+//
+// Client-only, like the loader it drives — there's no server-side
+// equivalent of showing a spinner, since a Route Handler has no live UI to
+// show one in. Use lib/api/server.ts (backendFetch/backendEnvelope) there.
+import { setBadgeLoading, setGlobalLoading } from "@/app/providers/LoaderContext";
 
 /** FormData → plain object (files pass through as File). */
 export const formDataToObject = (
@@ -69,7 +74,20 @@ export interface FetchParams {
   body?: FormData | Record<string, unknown>;
   /** Send `body` as multipart FormData instead of JSON. */
   isFormdata?: boolean;
+  /**
+   * Custom show/hide callback (e.g. a component-local spinner). Omit it and
+   * `fetching` drives the shared global loader for you automatically — no
+   * useLoader()/useContext needed at the call site.
+   */
   setLoading?: (loading: boolean) => void;
+  /**
+   * Show a named "Loading X…" badge (instead of the plain full-screen
+   * spinner) for the duration of this call, e.g. `badgeLoading: "models"`.
+   * Ignored if `setLoading` is also passed.
+   */
+  badgeLoading?: string;
+  /** Set to false to show no loader at all for this call (e.g. silent polling). */
+  showLoader?: boolean;
 }
 
 /**
@@ -77,6 +95,11 @@ export interface FetchParams {
  * the JSON envelope, and normalize success/error into one ApiResult shape so
  * callers stop re-writing `if (!res.ok) { const { detail } = await res.json() }`
  * — and stop hand-converting objects to FormData (pass `isFormdata: true`).
+ *
+ * Also drives the global loader by default (see LoaderContext's hook-free
+ * singleton) — pass `setLoading` only when you need a component-local
+ * spinner instead, `badgeLoading: "label"` for a named badge, or
+ * `showLoader: false` to skip it entirely.
  */
 export async function fetching<T = unknown>({
   url,
@@ -84,8 +107,23 @@ export async function fetching<T = unknown>({
   body,
   isFormdata,
   setLoading,
+  badgeLoading,
+  showLoader = true,
 }: FetchParams): Promise<ApiResult<T>> {
-  setLoading?.(true);
+  const startLoading = () => {
+    if (setLoading) return setLoading(true);
+    if (!showLoader) return;
+    if (badgeLoading) return setBadgeLoading(badgeLoading, true);
+    setGlobalLoading(true);
+  };
+  const stopLoading = () => {
+    if (setLoading) return setLoading(false);
+    if (!showLoader) return;
+    if (badgeLoading) return setBadgeLoading(badgeLoading, false);
+    setGlobalLoading(false);
+  };
+
+  startLoading();
   try {
     // Resolve URL + body + headers. Only JSON needs an explicit Content-Type —
     // for FormData the browser sets the multipart boundary itself.
@@ -137,6 +175,6 @@ export async function fetching<T = unknown>({
   } catch {
     return { ok: false, status: 0, success: 0 };
   } finally {
-    setLoading?.(false);
+    stopLoading();
   }
 }
