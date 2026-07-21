@@ -70,7 +70,7 @@ export function CoverageScreen({ index }: { index: number }) {
   }, [contractCheck]);
 
   const selectedCoverage = coverages?.find((c) => c.id === selectedId) ?? null;
-  console.log(coverages);
+
   return (
     <ScreenShell
       id={flow.stepId(index)}
