@@ -4,52 +4,32 @@ import { useScroll } from "@/app/ScrollProvider";
 import { RatesFlow } from "@/components/rates/RatesFlow";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Lottie, { type LottieRefCurrentProps } from "lottie-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 gsap.registerPlugin(ScrollTrigger);
 
 /**
- * The repair callouts cycled over the jeep schematic. Each entry maps a part
- * overlay in calculator-car.svg to its label + typical repair cost chip.
- */
-const PARTS = [
-  {
-    targets: "#car_powertrain",
-    label: "Transmission Repair",
-    price: "-$3,200",
-  },
-  {
-    targets: "#car_tires, #wheel",
-    label: "Tire & Wheel Replacement",
-    price: "-$1,100",
-  },
-  {
-    targets: "#car_windshield-protect",
-    label: "Windshield Replacement",
-    price: "-$1,450",
-  },
-  {
-    targets: "#car_paint-protect",
-    label: "Paint Correction",
-    price: "-$2,000",
-  },
-];
-
-/**
  * "Coverage where you need it." — client half.
  *
  * Left: headline + card (jeep-leaf illustration, GET COVERED, "as low as").
- * Right: the jeep schematic; GSAP cycles each covered part (powertrain, tires,
- * windshield, paint) with a matching repair-cost callout — replacing the
- * design's Lottie.
+ * Right: car_animation.json — the real Lottie, which already animates each
+ * covered part (brakes, suspension, HVAC, engine, transmission) together
+ * with its repair-cost label, so there's no separate GSAP callout system to
+ * keep in sync here — it just plays.
  *
  * GATE: the rates flow (Yes/No entry screen and everything after) does not
  * exist in the DOM until GET COVERED is clicked; clicking reveals it and
  * smooth-scrolls down to the entry screen.
  */
-export function GetCoveredClient({ carSvg }: { carSvg: string }) {
+export function GetCoveredClient({
+  carAnimation,
+}: {
+  carAnimation: object;
+}) {
   const rootRef = useRef<HTMLElement>(null);
+  const lottieRef = useRef<LottieRefCurrentProps | null>(null);
   const [unlocked, setUnlocked] = useState(false);
   const { scrollTo } = useScroll();
 
@@ -61,65 +41,23 @@ export function GetCoveredClient({ carSvg }: { carSvg: string }) {
       "(prefers-reduced-motion: reduce)",
     ).matches;
 
-    const ctx = gsap.context(() => {
-      // Start hidden: every part overlay + the callout chips. (The stray
-      // tire-line strokes are hidden like the original calculator init did.)
-      gsap.set(
-        "#car_powertrain, #car_tires, #wheel, #car_windshield-protect, #car_paint-protect",
-        { autoAlpha: 0 },
-      );
-      gsap.set("#tire-line-3, #tire-line-2-3, #tire-line-6, #tire-line-2-6", {
-        opacity: 0,
-      });
-      gsap.set("[data-chip]", { autoAlpha: 0 });
+    // Reduced motion: freeze on a frame that still shows a part + its price,
+    // instead of looping the animation forever.
+    if (prefersReduced) lottieRef.current?.goToAndStop(444, true);
 
-      if (prefersReduced) {
-        // No motion: show the first part + its callout statically.
-        gsap.set(PARTS[0].targets, { autoAlpha: 1 });
-        gsap.set('[data-chip="0"]', { autoAlpha: 1 });
-        return;
+    const ctx = gsap.context(() => {
+      // Jeep-leaf illustration on the card bobs gently.
+      if (!prefersReduced) {
+        gsap.to("[data-jeep]", {
+          y: -8,
+          duration: 2,
+          ease: "sine.inOut",
+          repeat: -1,
+          yoyo: true,
+        });
       }
 
-      // ── Part / callout cycle ───────────────────────────────────────────
-      const cycle = gsap.timeline({ repeat: -1 });
-      PARTS.forEach((part, i) => {
-        const chip = `[data-chip="${i}"]`;
-        cycle
-          .to(part.targets, { autoAlpha: 1, duration: 0.4 })
-          .fromTo(
-            chip,
-            { autoAlpha: 0, y: 12 },
-            { autoAlpha: 1, y: 0, duration: 0.35, ease: "power2.out" },
-            "<",
-          )
-          .to(part.targets, { autoAlpha: 0, duration: 0.4 }, "+=1.7")
-          .to(chip, { autoAlpha: 0, duration: 0.3 }, "<");
-      });
-
-      // ── Idle life ──────────────────────────────────────────────────────
-      // Jeep-leaf illustration bobs gently.
-      gsap.to("[data-jeep]", {
-        y: -8,
-        duration: 2,
-        ease: "sine.inOut",
-        repeat: -1,
-        yoyo: true,
-      });
-      // Tire tracks drift behind the wheels.
-      gsap
-        .timeline({ repeat: -1, defaults: { ease: "none" } })
-        .fromTo(
-          "#car_tire-track-1, #car_tire-track-2",
-          { x: -30, y: 30, autoAlpha: 1 },
-          { x: 30, y: -30, duration: 2.2 },
-        )
-        .to(
-          "#car_tire-track-1, #car_tire-track-2",
-          { autoAlpha: 0, duration: 0.3 },
-          "-=0.3",
-        );
-
-      // ── Entrance (plays once when the section scrolls into view) ────────
+      // Entrance (plays once when the section scrolls into view).
       gsap.from(el.querySelectorAll<HTMLElement>("[data-rise]"), {
         autoAlpha: 0,
         y: 30,
@@ -186,33 +124,18 @@ export function GetCoveredClient({ carSvg }: { carSvg: string }) {
               </p>
             </div>
 
-            {/* Jeep schematic + cycling repair callouts */}
+            {/* Jeep schematic — the real Lottie, parts + price labels baked in */}
             <div
               data-rise
-              className="relative mx-auto w-full max-w-120 flex-1  lg:max-w-[600px]"
+              className="relative mx-auto w-full max-w-120 flex-1 lg:max-w-[600px]"
             >
-              <div
-                aria-hidden
-                className="[&>svg]:h-auto [&>svg]:w-full [&>svg]:max-h-full [&>svg]:mx-auto "
-                dangerouslySetInnerHTML={{ __html: carSvg }}
+              <Lottie
+                lottieRef={lottieRef}
+                animationData={carAnimation}
+                loop
+                autoplay
+                className="mx-auto h-auto w-full"
               />
-
-              {/* One callout pair per part — GSAP fades each in during its
-                  phase of the cycle. */}
-              {PARTS.map((part, i) => (
-                <div
-                  key={part.label}
-                  data-chip={i}
-                  className="pointer-events-none absolute inset-0"
-                >
-                  <span className="absolute left-0 top-[42%] rounded-full bg-[#2d3d00] px-4 py-2 text-[15px] font-bold text-[#fff9f1] shadow-[0px_4px_12px_rgba(45,61,0,0.35)] sm:text-[17px]">
-                    {part.label}
-                  </span>
-                  <span className="absolute right-0 top-[5%] rounded-full bg-[#a6e00c] px-4 py-2 text-[15px] font-bold text-[#2d3d00] shadow-[0px_4px_12px_rgba(166,224,12,0.45)] sm:text-[17px]">
-                    {part.price}
-                  </span>
-                </div>
-              ))}
             </div>
           </div>
         </div>
