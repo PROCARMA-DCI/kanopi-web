@@ -11,38 +11,33 @@ import { SignaturePad } from "../SignaturePad";
 import { useFlow } from "../wizard/FlowProvider";
 import { ScreenShell } from "../wizard/ScreenShell";
 
-/** No-account · About You — account details, agreements and signature. */
+/**
+ * No-account · "Your Info" (Figma KANOPI-NO-ACCOUNT-02) — address, password,
+ * agreements and signature. Name/email/phone were moved to the earlier
+ * CreateAccountScreen step, so they're read from `flow.data` here, not
+ * re-collected.
+ */
 export function SignupScreen({ index }: { index: number }) {
   const flow = useFlow();
   const { setLoading } = useLoader();
-  const [firstName, setFirstName] = useState(flow.data.firstName as string);
-  const [lastName, setLastName] = useState(flow.data.lastName as string);
-  const [email, setEmail] = useState("");
-  const [confirmEmail, setConfirmEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [streetAddress, setStreetAddress] = useState("");
   const [apt, setApt] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
-  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [agreeVsc, setAgreeVsc] = useState(false);
   const [agreeSms, setAgreeSms] = useState(false);
   const [agreeEmail, setAgreeEmail] = useState(false);
   const [signature, setSignature] = useState("");
 
-  const emailMatch = email.trim() !== "" && email === confirmEmail;
   const passwordMatch = password !== "" && password === confirmPassword;
 
   const requirements = [
-    firstName.trim() !== "",
-    lastName.trim() !== "",
-    emailMatch,
-    passwordMatch,
     streetAddress.trim() !== "",
     city.trim() !== "",
     state.trim() !== "",
-    phone.trim() !== "",
+    passwordMatch,
     agreeVsc, // consent to terms is required
     signature !== "",
   ];
@@ -55,8 +50,8 @@ export function SignupScreen({ index }: { index: number }) {
       index={index}
       total={flow.total}
       completion={completion}
-      title="About You"
-      question="Awesome! Now let's get to know a little more about you."
+      title="Your Info"
+      question="Almost done! I just need a few more pieces of info to finalize your account."
       canAdvance={canAdvance}
       nextLabel={index === flow.total - 1 ? "See my rate" : "Next"}
       onNext={async () => {
@@ -67,19 +62,16 @@ export function SignupScreen({ index }: { index: number }) {
           url: "/api/checkVinWithDetail",
           method: "POST",
           isFormdata: true,
-          body: { email, vin: flow.data.vin as string },
+          body: { email: flow.data.email as string, vin: flow.data.vin as string },
           setLoading,
         });
 
         flow.next(index, {
-          firstName,
-          lastName,
-          email,
           streetAddress,
           apt,
           city,
           state,
-          phone,
+          password,
           agreeVsc,
           agreeSms,
           agreeEmail,
@@ -90,34 +82,35 @@ export function SignupScreen({ index }: { index: number }) {
       onBack={() => flow.back(index)}
     >
       <div className="flex flex-col gap-6">
-        {/* Account + address fields on a 4-col grid so the street field can
-            span 3/4 while Apt takes 1/4 (like the old Contact screen). */}
+        {/* Street 3/4, Apt 1/4; City + State split the next row */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
           <Input
-            className="sm:col-span-2"
-            placeholder="First Name"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
+            className="sm:col-span-3"
+            type="text"
+            placeholder="Street address"
+            value={streetAddress}
+            onChange={(e) => setStreetAddress(e.target.value)}
+          />
+          <Input
+            className="sm:col-span-1"
+            type="text"
+            placeholder="Apt/Unit #"
+            value={apt}
+            onChange={(e) => setApt(e.target.value)}
           />
           <Input
             className="sm:col-span-2"
-            placeholder="Last Name"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
+            type="text"
+            placeholder="City"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
           />
-          <Input
+          <SelectField
             className="sm:col-span-2"
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <Input
-            className="sm:col-span-2"
-            type="email"
-            placeholder="Confirm Email"
-            value={confirmEmail}
-            onChange={(e) => setConfirmEmail(e.target.value)}
+            placeholder="Select State"
+            options={states}
+            value={state}
+            onChange={setState}
           />
           <Input
             className="sm:col-span-2"
@@ -133,51 +126,9 @@ export function SignupScreen({ index }: { index: number }) {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
-          {/* Street 3/4, Apt 1/4 */}
-          <Input
-            className="sm:col-span-3"
-            type="text"
-            placeholder="Street address"
-            value={streetAddress}
-            onChange={(e) => setStreetAddress(e.target.value)}
-          />
-          <Input
-            className="sm:col-span-1"
-            type="text"
-            placeholder="Apt/Unit #"
-            value={apt}
-            onChange={(e) => setApt(e.target.value)}
-          />
-          {/* City + State split the next row */}
-          <Input
-            className="sm:col-span-2"
-            type="text"
-            placeholder="City"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-          />
-          <SelectField
-            className="sm:col-span-2"
-            placeholder="State"
-            options={states}
-            value={state}
-            onChange={setState}
-          />
-          <Input
-            className="sm:col-span-2"
-            type="tel"
-            placeholder="Phone #"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-          />
         </div>
 
-        {/* Inline mismatch hints */}
-        {confirmEmail !== "" && !emailMatch && (
-          <p className="-mt-2 text-[13px] text-red-600">
-            Emails don&apos;t match.
-          </p>
-        )}
+        {/* Inline mismatch hint */}
         {confirmPassword !== "" && !passwordMatch && (
           <p className="-mt-2 text-[13px] text-red-600">
             Passwords don&apos;t match.

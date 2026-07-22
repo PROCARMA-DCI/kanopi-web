@@ -11,7 +11,7 @@ import { ScreenShell } from "../wizard/ScreenShell";
 
 interface VehicleScreenProps {
   index: number;
-  /** Copy differs slightly between flows, so it's a prop. */
+  /** Override Camo's question — omit to use the personalized default below. */
   question?: string;
 }
 
@@ -24,12 +24,16 @@ const DEFAULT_VIN = "1".repeat(17);
  * it keeps things DRY; if the two flows ever need different vehicle logic,
  * copy this file per flow and diverge freely.
  */
-export function VehicleScreen({
-  index,
-  question = "Let's personalize a coverage for your vehicle.",
-}: VehicleScreenProps) {
+export function VehicleScreen({ index, question }: VehicleScreenProps) {
   const flow = useFlow();
   const { makes, fetchModelAgainstMake, models, fetchMakes } = useLayout();
+  const firstName = (flow.data.firstName as string) || "";
+  // Figma: "Awesome! Nice to meet you {FirstName}. Now let's personalize a
+  // coverage for your vehicle." — falls back to the generic line if the
+  // name isn't in flow.data yet (e.g. this screen used standalone).
+  const defaultQuestion = firstName
+    ? `Awesome! Nice to meet you ${firstName}.\nNow let's personalize a coverage for your vehicle.`
+    : "Let's personalize a coverage for your vehicle.";
   const [vin, setVin] = useState("");
   const [make, setMake] = useState<string>("");
   const [model, setModel] = useState("");
@@ -67,7 +71,7 @@ export function VehicleScreen({
       total={flow.total}
       completion={completion}
       title="Your Vehicle"
-      question={question}
+      question={question ?? defaultQuestion}
       canAdvance={canAdvance}
       nextLabel={index === flow.total - 1 ? "See my rate" : "Next"}
       onNext={() =>

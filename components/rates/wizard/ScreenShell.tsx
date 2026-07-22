@@ -166,7 +166,7 @@ export function ScreenShell({
     <section
       ref={rootRef}
       id={id}
-      className="flex min-h-[100dvh] w-full snap-start snap-always flex-col bg-[#fff9f1]"
+      className="flex min-h-[100dvh] w-full  snap-start snap-always flex-col bg-[#fff9f1]"
     >
       <RatesHeader
         title={title}
@@ -186,9 +186,9 @@ export function ScreenShell({
 
         {/* Content column: children AND footer share this width, so the
             buttons are always exactly as wide as the children. */}
-        <div className={cn("flex w-full flex-col gap-8", contentClassName)}>
+        <div className={cn("flex w-full flex-col gap-8 ", contentClassName)}>
           {question && (
-            <div data-stagger className="text-left">
+            <div data-stagger className="w-full text-center">
               <GaiaBubble question={question} />
             </div>
           )}

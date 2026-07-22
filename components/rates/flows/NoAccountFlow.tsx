@@ -3,8 +3,8 @@
 import { useScroll } from "@/app/ScrollProvider";
 import { useState } from "react";
 import { CoverageScreen } from "../screens/CoverageScreen";
+import { CreateAccountScreen } from "../screens/CreateAccountScreen";
 import { ExistingPlanScreen } from "../screens/ExistingPlanScreen";
-import { NameScreen } from "../screens/NameScreen";
 import { ResultScreen } from "../screens/ResultScreen";
 import { SignupScreen } from "../screens/SignupScreen";
 import { VehicleScreen } from "../screens/VehicleScreen";
@@ -74,7 +74,7 @@ function Screens({ onLogin }: { onLogin: () => void }) {
 
   return (
     <>
-      {flow.revealed >= 1 && <NameScreen index={0} />}
+      {flow.revealed >= 1 && <CreateAccountScreen index={0} />}
       {flow.revealed >= 2 && <VehicleScreen index={1} />}
       {flow.revealed >= 3 && <SignupScreen index={2} />}
       {flow.revealed >= 4 && step3}
