@@ -27,7 +27,7 @@ export function RatesHeader({ title, progress }: RatesHeaderProps) {
       />
 
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/images/logo.svg" alt="Kanopi" className="h-[44px] w-auto" />
+      <img src="/images/logo.png" alt="Kanopi" className="h-[44px] w-auto" />
 
       <div className="pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-2">
         <span className="text-[20px] font-bold leading-none text-[#2d3d00]">
