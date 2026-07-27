@@ -20,8 +20,8 @@ interface ScreenShellProps {
   question?: string;
   canAdvance: boolean;
   nextLabel?: string;
-  onNext: () => void;
-  onBack: () => void;
+  onNext?: () => void;
+  onBack?: () => void;
   /**
    * Width of the CHILDREN + FOOTER column. The footer buttons always match the
    * children width because they share this column. Default = form width.
@@ -196,23 +196,27 @@ export function ScreenShell({
           <div data-stagger>{children}</div>
 
           <div data-stagger className="grid grid-cols-2 gap-4">
-            <Button
-              type="button"
-              variant="muted"
-              onClick={onBack}
-              className="cursor-pointer hover:bg-[#bec0a8]"
-            >
-              Back
-            </Button>
-            <Button
-              type="button"
-              className="cursor-pointer"
-              variant={canAdvance ? "primary" : "muted"}
-              disabled={!canAdvance}
-              onClick={onNext}
-            >
-              {nextLabel}
-            </Button>
+            {onBack && (
+              <Button
+                type="button"
+                variant="muted"
+                onClick={onBack}
+                className="cursor-pointer hover:bg-[#bec0a8]"
+              >
+                Back
+              </Button>
+            )}
+            {onNext && (
+              <Button
+                type="button"
+                className="cursor-pointer"
+                variant={canAdvance ? "primary" : "muted"}
+                disabled={!canAdvance}
+                onClick={onNext}
+              >
+                {nextLabel}
+              </Button>
+            )}
           </div>
         </div>
       </div>

@@ -6,6 +6,7 @@ import { SelectField } from "@/components/ui/select-field";
 import VinQrCodeRead from "@/components/VinQrCodeRead";
 import { fetching } from "@/lib/api/client";
 import { useEffect, useMemo, useState } from "react";
+import { planType } from "../data/coverages";
 import { generateYearsArray } from "../data/vehicle";
 import { useFlow } from "../wizard/FlowProvider";
 import { ScreenShell } from "../wizard/ScreenShell";
@@ -76,26 +77,49 @@ export function VehicleScreen({ index, question }: VehicleScreenProps) {
       canAdvance={canAdvance}
       nextLabel={index === flow.total - 1 ? "See my rate" : "Next"}
       onNext={async () => {
-        // ExistingPlanScreen (rendered by NoAccountFlow) reads
-        // contractCheck` off flow.data to decide what to show next.
-        const res = await fetching<Record<string, unknown>[]>({
-          url: "/api/checkAlreadyPurchasedPlanForEmail",
-          method: "POST",
-          isFormdata: true,
-          body: { email: flow.data.email as string },
-          badgeLoading: "Checking Email",
-        });
-        let existingPlan = null;
-        if (res?.message && res.message.length > 0) {
-          existingPlan = res.message;
-        }
+        // Both calls run concurrently, but flow.next (below) must wait for
+        // BOTH to resolve — awaiting them together (not fire-and-forget)
+        // avoids a race where `coverages` is read before its fetch settles.
+        const [coveragesRes, existingPlanRes] = await Promise.all([
+          fetching<{ message?: planType[] }>({
+            url: "/api/kanopiPlansList",
+            method: "POST",
+            body: {
+              dealer_id: 4,
+              postal_code: 24390,
+              state_province: "AL",
+              vehicle_mileage: "50000",
+              vin_number: "5TDJZRAH2MS062926",
+            },
+            badgeLoading: "Coverages Checking...",
+          }),
+          // CoverageScreen (rendered next) reads `existingPlan` off flow.data
+          // to show any plan(s) already on file above the purchasable list.
+          fetching<Record<string, unknown>[]>({
+            url: "/api/checkAlreadyPurchasedPlanForEmail",
+            method: "POST",
+            isFormdata: true,
+            body: { email: flow.data.email as string },
+            badgeLoading: "Checking Email",
+          }),
+        ]);
+
+        const plans = coveragesRes.message as planType[] | undefined;
+        const coverages = coveragesRes.success && plans?.length ? plans : undefined;
+
+        const existingPlan =
+          existingPlanRes?.message && existingPlanRes.message.length > 0
+            ? existingPlanRes.message
+            : null;
+
         flow.next(index, {
           vin: vin.trim() || DEFAULT_VIN,
           make,
           model,
           year,
           mileage,
-          existing: existingPlan,
+          existingPlan,
+          coverages,
         });
       }}
       onBack={() => flow.back(index)}

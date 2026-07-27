@@ -32,19 +32,11 @@ export function RatesFlow() {
     scrollTo("rates-entry");
   }
 
-  // "Login" from within the no-account flow (e.g. ExistingPlanScreen) swaps
-  // straight into the yes-account flow, same as picking "Yes" on entry.
-  function handleLogin() {
-    setFlowKey("yes-account");
-  }
-
   return (
     <div id="check-rates">
       <EntryScreen selected={flowKey} onSelect={handleEntry} />
 
-      {flowKey === "no-account" && (
-        <NoAccountFlow onRestart={handleRestart} onLogin={handleLogin} />
-      )}
+      {flowKey === "no-account" && <NoAccountFlow onRestart={handleRestart} />}
       {flowKey === "yes-account" && <YesAccountFlow onRestart={handleRestart} />}
     </div>
   );
