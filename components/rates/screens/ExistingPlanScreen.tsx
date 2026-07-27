@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import gsap from "gsap";
 import { useEffect, useRef } from "react";
 import { CoverageCard } from "../CoverageCard";
-import { COVERAGES } from "../data/coverages";
+import { DemoCoverages } from "../data/coverages";
 import { RatesHeader } from "../RatesHeader";
 
 /**
@@ -41,7 +41,7 @@ export function ExistingPlanScreen({
   onViewCoverages: () => void;
   onLogin: () => void;
 }) {
-  const plan = COVERAGES[0];
+  const plan = DemoCoverages[0];
   const rootRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
