@@ -66,13 +66,27 @@ export interface VehicleRate {
   TotalAdminCost?: number;
   RateCost?: number;
 }
+export interface planType {
+  plan_id: string;
+  title: string;
+  category: string;
+  term: string;
+  deductible: number;
+  price: number;
+  coverage_id: number;
+  product_id: number;
+  dealer_program_id: number;
+  reserve_rate_id: number;
+}
 
 /** Maps one getVehicleRates rate option onto the shape CoverageCard renders. */
 export function mapVehicleRateToCoverage(rate: VehicleRate): Coverage {
   const years = rate.TermMonths ? Math.round(rate.TermMonths / 12) : null;
   const miles = rate.TermMiles?.toLocaleString("en-US");
   const highlight =
-    years && miles ? `${years} Year or ${miles} Miles` : rate.ProductName ?? "";
+    years && miles
+      ? `${years} Year or ${miles} Miles`
+      : (rate.ProductName ?? "");
 
   return {
     id: String(rate.ReserveRateId),

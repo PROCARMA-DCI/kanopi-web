@@ -4,6 +4,7 @@ import { useLayout } from "@/app/providers/LayoutContext";
 import { Input } from "@/components/ui/input";
 import { SelectField } from "@/components/ui/select-field";
 import VinQrCodeRead from "@/components/VinQrCodeRead";
+import { fetching } from "@/lib/api/client";
 import { useEffect, useMemo, useState } from "react";
 import { generateYearsArray } from "../data/vehicle";
 import { useFlow } from "../wizard/FlowProvider";
@@ -74,15 +75,29 @@ export function VehicleScreen({ index, question }: VehicleScreenProps) {
       question={question ?? defaultQuestion}
       canAdvance={canAdvance}
       nextLabel={index === flow.total - 1 ? "See my rate" : "Next"}
-      onNext={() =>
+      onNext={async () => {
+        // ExistingPlanScreen (rendered by NoAccountFlow) reads
+        // contractCheck` off flow.data to decide what to show next.
+        const res = await fetching<Record<string, unknown>[]>({
+          url: "/api/checkAlreadyPurchasedPlanForEmail",
+          method: "POST",
+          isFormdata: true,
+          body: { email: flow.data.email as string },
+          badgeLoading: "Checking Email",
+        });
+        let existingPlan = null;
+        if (res?.message && res.message.length > 0) {
+          existingPlan = res.message;
+        }
         flow.next(index, {
           vin: vin.trim() || DEFAULT_VIN,
           make,
           model,
           year,
           mileage,
-        })
-      }
+          existing: existingPlan,
+        });
+      }}
       onBack={() => flow.back(index)}
     >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 max-w-[684px] mx-auto ">
