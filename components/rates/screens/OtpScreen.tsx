@@ -79,19 +79,26 @@ export function OtpScreen({ index }: { index: number }) {
       // onBack={() => flow.back(index)}
     >
       <div className="flex flex-col items-center gap-4 py-4 border border-input rounded-2xl max-w-[796px]">
-        <h1>
+        <p className="max-w-[400px] text-center text-[23.1px]">
           We sent a {OTP_LENGTH}-digit code to {destination ?? "you"}. Enter it
           below to verify your account.
+        </p>
+        <h1 className="!text-[#2D3D00] text-primary text-center font-bold text-[23.84px]">
+          Enter Code
         </h1>
         <InputOTP
           maxLength={OTP_LENGTH}
           value={otp}
           onChange={setOtp}
-          containerClassName="justify-center"
+          containerClassName="justify-center "
         >
           <InputOTPGroup>
             {Array.from({ length: OTP_LENGTH }, (_, i) => (
-              <InputOTPSlot key={i} index={i} />
+              <InputOTPSlot
+                className="h-[81.74px] w-[94.54px]"
+                key={i}
+                index={i}
+              />
             ))}
           </InputOTPGroup>
         </InputOTP>
