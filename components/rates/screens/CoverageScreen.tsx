@@ -71,8 +71,12 @@ export function CoverageScreen({ index }: { index: number }) {
     .filter(Boolean)
     .join(" ");
 
-  const selectedCoverage =
-    coverages?.find((c) => c.reserve_rate_id === selectedId) ?? null;
+  // Clicking a card both selects AND advances — no separate Next button on
+  // this screen (see the plain <div>, no onNext/onBack, further down).
+  const handleSelect = (coverage: planType) => {
+    setSelectedId(coverage.reserve_rate_id);
+    flow.next(index, { coverageId: coverage.reserve_rate_id, selectedCoverage: coverage });
+  };
 
   return (
     <ScreenShell
@@ -110,11 +114,6 @@ export function CoverageScreen({ index }: { index: number }) {
         )
       }
       canAdvance={canAdvance}
-      nextLabel={index === flow.total - 1 ? "See my rate" : "Next"}
-      onNext={() =>
-        flow.next(index, { coverageId: selectedId, selectedCoverage })
-      }
-      onBack={() => flow.back(index)}
     >
       <div className="flex flex-col gap-8">
         {/* Plan(s) already on file — shown above the purchasable list,
@@ -145,7 +144,7 @@ export function CoverageScreen({ index }: { index: number }) {
               key={coverage.reserve_rate_id}
               coverage={coverage}
               selected={selectedId === coverage.reserve_rate_id}
-              onSelect={() => setSelectedId(coverage.reserve_rate_id)}
+              onSelect={() => handleSelect(coverage)}
             />
           ))}
         </div>

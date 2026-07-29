@@ -7,18 +7,21 @@ interface RatesHeaderProps {
 }
 
 /**
- * Sticky top bar: Kanopi mark left, centred title + step progress.
+ * Fixed top bar: Kanopi mark left, centred title + step progress.
  *
- * `sticky top-0` keeps it pinned (via the normal window scroll — no nested
- * scrollbar) while a taller-than-viewport screen scrolls beneath it; it
- * releases naturally when the section ends.
+ * `fixed` pins it to the viewport permanently — it never moves as the page
+ * scrolls. Every screen renders its own <RatesHeader>, all stacked at the
+ * exact same fixed position; ScreenShell fades out every screen's header
+ * except the currently-dominant one's (opacity, not position), so only one
+ * is ever visible — the "changing" effect is a crossfade of CONTENT, not the
+ * header repositioning itself.
  *
  * The `data-header-sweep` span is a light bar that ScreenShell animates
  * left→right each time the screen is entered.
  */
 export function RatesHeader({ title, progress }: RatesHeaderProps) {
   return (
-    <header className="sticky top-0 z-30 flex h-[98px] items-center overflow-hidden bg-[#fff9f1] px-10 shadow-[0px_4px_20px_0px_rgba(129,74,0,0.1)]">
+    <header className="fixed inset-x-0 top-0 z-30 flex h-[98px] items-center overflow-hidden bg-[#fff9f1] px-10 shadow-[0px_4px_20px_0px_rgba(129,74,0,0.1)] transition-[opacity,filter] duration-200">
       {/* Left→right shine sweep (animated by ScreenShell on screen entry). */}
       <span
         aria-hidden

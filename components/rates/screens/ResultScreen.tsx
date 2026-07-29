@@ -7,6 +7,7 @@ import { DemoCoverages, type planType } from "../data/coverages";
 import { GaiaBubble } from "../GaiaBubble";
 import { RatesHeader } from "../RatesHeader";
 import { useFlow } from "../wizard/FlowProvider";
+import { useHeaderDominance } from "../wizard/useHeaderDominance";
 
 /**
  * Shared closing screen. Reads the chosen coverage out of the flow's collected
@@ -24,6 +25,8 @@ export function ResultScreen() {
     DemoCoverages.find((c) => c.plan_id === flow.data.coverageId) ??
     DemoCoverages[0];
   const price = chosen.price;
+
+  useHeaderDominance(rootRef);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -82,7 +85,7 @@ export function ResultScreen() {
         progress={{ total: flow.total, current: flow.total - 1, completion: 1 }}
       />
 
-      <div className="flex flex-1 items-center justify-center px-6 py-16">
+      <div className="flex flex-1 items-center justify-center px-6 pb-16 pt-40.5">
         <div className="flex w-full max-w-[684px] flex-col gap-8">
           <div className="text-left">
             <GaiaBubble question="All set — here's your personalized estimate." />

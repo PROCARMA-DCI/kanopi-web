@@ -91,7 +91,7 @@ export function VehicleScreen({ index, question }: VehicleScreenProps) {
               vehicle_mileage: "50000",
               vin_number: "5TDJZRAH2MS062926",
             },
-            badgeLoading: "Coverages Checking...",
+            badgeLoading: "Coverages Checking",
           }),
           // CoverageScreen (rendered next) reads `existingPlan` off flow.data
           // to show any plan(s) already on file above the purchasable list.
@@ -105,7 +105,8 @@ export function VehicleScreen({ index, question }: VehicleScreenProps) {
         ]);
 
         const plans = coveragesRes.message as planType[] | undefined;
-        const coverages = coveragesRes.success && plans?.length ? plans : undefined;
+        const coverages =
+          coveragesRes.success && plans?.length ? plans : undefined;
 
         const existingPlan =
           existingPlanRes?.message && existingPlanRes.message.length > 0

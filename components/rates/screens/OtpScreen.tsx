@@ -19,6 +19,8 @@ const OTP_LENGTH = 5;
  * surrounding screens' layout (ScreenShell + Camo question) with a shadcn
  * `<InputOTP>` for the code itself, per request.
  *
+ * Just verifies the code — PaymentScreen (rendered next) owns Stripe setup.
+ *
  * NOTE: the verify endpoint name/params below are a placeholder
  * (`/api/verifySignupOTP`, `{otp, send_via, email, phone}`) — swap in the
  * real contract once it's confirmed.
@@ -30,10 +32,10 @@ export function OtpScreen({ index }: { index: number }) {
   const [error, setError] = useState("");
   const [resending, setResending] = useState(false);
 
-  const sendVia = flow.data.sendVia as "phone" | "email" | undefined;
+  const sendVia = flow.data.sendVia as "sms" | "email" | undefined;
   const email = flow.data.email as string | undefined;
   const phone = flow.data.phone as string | undefined;
-  const destination = sendVia === "phone" ? phone : email;
+  const destination = sendVia === "sms" ? phone : email;
 
   const canAdvance = otp.length === OTP_LENGTH;
 
@@ -59,46 +61,35 @@ export function OtpScreen({ index }: { index: number }) {
       question={`We sent a ${OTP_LENGTH}-digit code to ${destination ?? "you"}. Enter it below to verify your account.`}
       canAdvance={canAdvance}
       nextLabel={index === flow.total - 1 ? "See my rate" : "Next"}
-      // onNext={async () => {
-      //   setError("");
-      //   const res = await fetching({
-      //     url: "/api/verifySignupOTP",
-      //     method: "POST",
-      //     isFormdata: true,
-      //     body: { otp, send_via: sendVia, email, phone },
-      //     setLoading,
-      //   });
+      onNext={async () => {
+        setError("");
+        const res = await fetching({
+          url: "/api/verifySignupOTP",
+          method: "POST",
+          isFormdata: true,
+          body: { otp, send_via: sendVia, email, phone },
+          setLoading,
+        });
 
-      //   if (!res.ok || res.success === 0) {
-      //     setError("That code didn't work — please check it and try again.");
-      //     return;
-      //   }
+        if (!res.ok || res.success === 0) {
+          setError("That code didn't work — please check it and try again.");
+          return;
+        }
 
-      //   flow.next(index, { otpVerified: true });
-      // }}
-      // onBack={() => flow.back(index)}
+        flow.next(index, { otpVerified: true });
+      }}
+      onBack={() => flow.back(index)}
     >
-      <div className="flex flex-col items-center gap-4 py-4 border border-input rounded-2xl max-w-[796px]">
-        <p className="max-w-[400px] text-center text-[23.1px]">
-          We sent a {OTP_LENGTH}-digit code to {destination ?? "you"}. Enter it
-          below to verify your account.
-        </p>
-        <h1 className="!text-[#2D3D00] text-primary text-center font-bold text-[23.84px]">
-          Enter Code
-        </h1>
+      <div className="flex flex-col items-center gap-4">
         <InputOTP
           maxLength={OTP_LENGTH}
           value={otp}
           onChange={setOtp}
-          containerClassName="justify-center "
+          containerClassName="justify-center"
         >
           <InputOTPGroup>
             {Array.from({ length: OTP_LENGTH }, (_, i) => (
-              <InputOTPSlot
-                className="h-[81.74px] w-[94.54px]"
-                key={i}
-                index={i}
-              />
+              <InputOTPSlot key={i} index={i} />
             ))}
           </InputOTPGroup>
         </InputOTP>

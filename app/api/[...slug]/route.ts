@@ -7,6 +7,7 @@ import {
   backendEnvelope,
   CONTRACT_API_URL,
 } from "@/lib/api/server";
+import { fastapi } from "@/lib/config";
 
 /**
  * Generic pass-through proxy: /api/<slug> → FastAPI's /<slug>, same method,
@@ -36,6 +37,8 @@ const RESOURCE_BACKENDS: Record<string, string> = {
   // Example — a resource served by a DIFFERENT backend:
   contracts: CONTRACT_API_URL,
   vindecode: "https://fastapi.mypcp.us",
+
+  stripe: fastapi ?? "http://localhost:4242",
 };
 
 async function proxy(request: NextRequest, slugParts: string[]) {

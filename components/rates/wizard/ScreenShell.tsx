@@ -92,6 +92,14 @@ export function ScreenShell({
     // one (less than 50% on-screen) blurs — more the smaller it gets. So during
     // a transition exactly one screen blurs out, never both. All px-based
     // (getBoundingClientRect + innerHeight) — no vh units.
+    //
+    // Each screen's <header> is `position: sticky`, which only pins it while
+    // ITS OWN section is in view — a section that's only partially scrolled
+    // into place still renders its header at that section's actual (un-stuck)
+    // top, which can land mid-viewport. Without this, two headers are
+    // visible at once during a transition. So the minority screen's header
+    // doesn't just blur, it's hidden (opacity 0) — only the dominant screen's
+    // header ever shows.
     const MAX_BLUR = 12;
     let raf = 0;
 
@@ -104,11 +112,16 @@ export function ScreenShell({
         Math.min(rect.bottom, viewportPx) - Math.max(rect.top, 0),
       );
       const coverage = viewportPx > 0 ? visiblePx / viewportPx : 0;
+      const dominant = coverage >= 0.5;
       // >=50% visible → sharp; below that, blur ramps up to MAX at 0% visible.
-      const ratio = coverage >= 0.5 ? 0 : (0.5 - coverage) / 0.5;
+      const ratio = dominant ? 0 : (0.5 - coverage) / 0.5;
       const blur = +(ratio * MAX_BLUR).toFixed(2);
       const value = blur < 0.15 ? "" : `blur(${blur}px)`;
       for (const t of targets) t.style.filter = value;
+      if (header) {
+        header.style.opacity = dominant ? "1" : "0";
+        header.style.pointerEvents = dominant ? "" : "none";
+      }
     };
 
     const onScroll = () => {
@@ -157,6 +170,10 @@ export function ScreenShell({
       window.removeEventListener("resize", onScroll);
       if (raf) cancelAnimationFrame(raf);
       for (const t of targets) t.style.filter = "";
+      if (header) {
+        header.style.opacity = "";
+        header.style.pointerEvents = "";
+      }
       io.disconnect();
       ctx.revert();
     };
@@ -175,7 +192,7 @@ export function ScreenShell({
 
       <div
         ref={contentRef}
-        className="flex flex-1 flex-col items-center justify-center gap-8 px-6 py-16 will-change-[filter]"
+        className="flex flex-1 flex-col items-center justify-center gap-8 px-6 pb-16 pt-40.5 will-change-[filter]"
       >
         {/* Wide/full heading area — independent of the content column width. */}
         {heading && (

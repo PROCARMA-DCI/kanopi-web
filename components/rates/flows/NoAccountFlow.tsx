@@ -4,6 +4,7 @@ import { CoverageScreen } from "../screens/CoverageScreen";
 import { ConfirmCoverageScreen } from "../screens/ConfirmCoverageScreen";
 import { CreateAccountScreen } from "../screens/CreateAccountScreen";
 import { OtpScreen } from "../screens/OtpScreen";
+import { PaymentScreen } from "../screens/PaymentScreen";
 import { ResultScreen } from "../screens/ResultScreen";
 import { SignupScreen } from "../screens/SignupScreen";
 import { TwoFactorScreen } from "../screens/TwoFactorScreen";
@@ -15,7 +16,7 @@ import { FlowProvider, useFlow } from "../wizard/FlowProvider";
 // CoverageScreen shows any plan(s) already on file above the purchasable
 // list itself (see flow.data.existingPlan), so there's no separate
 // "existing plan" screen/branch to route between anymore.
-const TOTAL = 7;
+const TOTAL = 8;
 
 function Screens() {
   const flow = useFlow();
@@ -29,6 +30,7 @@ function Screens() {
       {flow.revealed >= 5 && <SignupScreen index={4} />}
       {flow.revealed >= 6 && <TwoFactorScreen index={5} />}
       {flow.revealed >= 7 && <OtpScreen index={6} />}
+      {flow.revealed >= 8 && <PaymentScreen index={7} />}
       {flow.finished && <ResultScreen />}
     </>
   );

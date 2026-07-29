@@ -1,12 +1,12 @@
+import { Toaster } from "@/components/ui/sonner";
+import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
-import { Caveat, Lato, Poppins, Geist } from "next/font/google";
+import { Caveat, Geist, Lato, Poppins } from "next/font/google";
 import "./globals.css";
 import LayoutProvider from "./providers/LayoutContext";
 import LoaderProvider from "./providers/LoaderContext";
 import ScrollProvider from "./ScrollProvider";
-import { cn } from "@/lib/utils";
-
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 const lato = Lato({
   variable: "--font-lato",
@@ -46,7 +46,17 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={cn("h-full", "antialiased", "snap-y", "snap-proximity", lato.variable, caveat.variable, poppins.variable, "font-sans", geist.variable)}
+      className={cn(
+        "h-full",
+        "antialiased",
+        "snap-y",
+        "snap-proximity",
+        lato.variable,
+        caveat.variable,
+        poppins.variable,
+        "font-sans",
+        geist.variable,
+      )}
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         {/* Loader outermost so any provider/component can trigger the overlay;
@@ -54,6 +64,7 @@ export default function RootLayout({
         <LoaderProvider>
           <LayoutProvider>
             <ScrollProvider>{children}</ScrollProvider>
+            <Toaster />
           </LayoutProvider>
         </LoaderProvider>
       </body>

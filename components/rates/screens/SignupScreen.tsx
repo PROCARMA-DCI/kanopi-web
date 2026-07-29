@@ -19,6 +19,7 @@ export function SignupScreen({ index }: { index: number }) {
   const flow = useFlow();
   const [streetAddress, setStreetAddress] = useState("");
   const [apt, setApt] = useState("");
+  const [zip, setZip] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [password, setPassword] = useState("");
@@ -32,6 +33,7 @@ export function SignupScreen({ index }: { index: number }) {
 
   const requirements = [
     streetAddress.trim() !== "",
+    zip.trim() !== "",
     city.trim() !== "",
     state.trim() !== "",
     passwordMatch,
@@ -55,6 +57,7 @@ export function SignupScreen({ index }: { index: number }) {
         flow.next(index, {
           streetAddress,
           apt,
+          zip,
           city,
           state,
           password,
@@ -67,10 +70,10 @@ export function SignupScreen({ index }: { index: number }) {
       onBack={() => flow.back(index)}
     >
       <div className="flex flex-col gap-6">
-        {/* Street 3/4, Apt 1/4; City + State split the next row */}
+        {/* Street 1/2, Apt + Zip 1/4 each; City + State split the next row */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
           <Input
-            className="sm:col-span-3"
+            className="sm:col-span-2"
             type="text"
             placeholder="Street address"
             value={streetAddress}
@@ -82,6 +85,14 @@ export function SignupScreen({ index }: { index: number }) {
             placeholder="Apt/Unit #"
             value={apt}
             onChange={(e) => setApt(e.target.value)}
+          />
+          <Input
+            className="sm:col-span-1"
+            type="text"
+            inputMode="numeric"
+            placeholder="Zip"
+            value={zip}
+            onChange={(e) => setZip(e.target.value.replace(/[^0-9]/g, ""))}
           />
           <Input
             className="sm:col-span-2"

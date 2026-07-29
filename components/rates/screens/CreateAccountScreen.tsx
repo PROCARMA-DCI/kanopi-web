@@ -1,6 +1,7 @@
 "use client";
 
 import { useLayout } from "@/app/providers/LayoutContext";
+import PhoneInput from "@/components/PhoneInput";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useFlow } from "../wizard/FlowProvider";
@@ -65,16 +66,15 @@ export function CreateAccountScreen({ index }: { index: number }) {
           value={confirmEmail}
           onChange={(e) => setConfirmEmail(e.target.value)}
         />
-        <Input
-          type="tel"
+        <PhoneInput
           placeholder="Phone #"
           value={phone}
-          onChange={(e) => setPhone(e.target.value)}
+          onChange={(value) => setPhone(value)}
         />
       </div>
 
       {confirmEmail !== "" && !emailMatch && (
-        <p className="-mt-2 text-[13px] text-red-600">
+        <p className="mt-2 text-[13px] text-red-600">
           Emails don&apos;t match.
         </p>
       )}
