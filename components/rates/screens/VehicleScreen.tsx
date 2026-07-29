@@ -113,20 +113,11 @@ export function VehicleScreen({ index, question }: VehicleScreenProps) {
             ? existingPlanRes.message
             : null;
 
-        // /saveContract wants the underlying IDs (make_id/model_id), not the
-        // display names — look them up here while `makes`/`models` are still
-        // the ones this exact make/model came from. `make`/`model` (names)
-        // stay in flow.data too, for screens that just display the vehicle.
-        const makeId = makes.find((m) => m.name === make)?.id;
-        const modelId = models.find((m) => m.ModelName === model)?.ModelID;
-
         flow.next(index, {
           vin: vin.trim() || DEFAULT_VIN,
           make,
           model,
           year,
-          makeId,
-          modelId,
           mileage,
           existingPlan,
           coverages,

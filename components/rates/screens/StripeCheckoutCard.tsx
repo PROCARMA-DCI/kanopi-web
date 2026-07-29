@@ -1,5 +1,6 @@
 import { useLayout } from "@/app/providers/LayoutContext";
 import { useLoader } from "@/app/providers/LoaderContext";
+import { useScroll } from "@/app/ScrollProvider";
 import { Button } from "@/components/ui/button";
 import { fetching } from "@/lib/api/client";
 import { formatDate } from "@/utils/helpers";
@@ -32,12 +33,22 @@ const StripeCheckoutCard = ({
   index,
 }: StripeCheckoutCardProps) => {
   const flow = useFlow();
+  const { scrollTo } = useScroll();
   const { badgeLoading, loading } = useLoader();
   const [expressCheckoutStatus, setExpressCheckoutStatus] = useState<
     "loading" | "ready" | "unavailable"
   >("loading");
   const { DealerID } = useLayout();
   const selectedCoverage = flow.data.selectedCoverage as planType;
+
+  // Set once Stripe actually confirms the charge. From that point on the
+  // card is charged — no matter what happens with saveContract, we must
+  // never run confirmCardPayment/confirmPayment again, or the customer gets
+  // double-charged. A saveContract failure (e.g. bad zip) only ever retries
+  // saveContract itself with this same already-succeeded PaymentIntent.
+  const [succeededPaymentIntent, setSucceededPaymentIntent] =
+    useState<PaymentIntent | null>(null);
+  const [saveError, setSaveError] = useState("");
 
   const [cardState, setCardState] = useState({
     cardNumber: false,
@@ -68,8 +79,8 @@ const StripeCheckoutCard = ({
     streetAddress: address,
     apt: unit_address,
     year: year_id,
-    makeId: make_id,
-    modelId: model_id,
+    make: make_id,
+    model: model_id,
     vin,
     mileage: initial_mileage,
     password,
@@ -108,9 +119,22 @@ const StripeCheckoutCard = ({
       isFormdata: true,
       badgeLoading: "Saving",
     });
-    if (res) {
-      return res;
+
+    // `fetching()` always resolves to a parsed object — even a validation
+    // rejection like { success: 0, message: "wrong zip code" } is truthy.
+    // Payment is already captured by this point, so a failure here must
+    // NOT be treated as "done" — it has to surface as a fixable error, not
+    // silently advance the flow.
+    if (!res.ok || res.success !== 1) {
+      setSaveError(
+        (res.message as string) ||
+          "We couldn't save your contract — please check your info and try again.",
+      );
+      return null;
     }
+
+    setSaveError("");
+    return res;
   };
   const handleExpressCheckoutConfirm = async (
     event: StripeExpressCheckoutElementConfirmEvent,
@@ -133,6 +157,7 @@ const StripeCheckoutCard = ({
     }
 
     if (paymentIntent?.status === "succeeded") {
+      setSucceededPaymentIntent(paymentIntent);
       const result = await savePayment(paymentIntent);
       if (result) {
         flow.next(index, { paymentSuccess: true });
@@ -165,6 +190,7 @@ const StripeCheckoutCard = ({
     }
 
     if (paymentIntent.status === "succeeded") {
+      setSucceededPaymentIntent(paymentIntent);
       // =================================
       // Wait For Webhook Result
       // =================================
@@ -177,6 +203,58 @@ const StripeCheckoutCard = ({
 
     badgeLoading("Saving", false);
   };
+
+  // The card is already charged at this point — this only ever retries
+  // saveContract (with whatever's currently in flow.data, e.g. a zip the
+  // customer just fixed on a previous screen), never Stripe again.
+  const handleRetrySave = async () => {
+    if (!succeededPaymentIntent) return;
+    badgeLoading("Saving", true);
+    const result = await savePayment(succeededPaymentIntent);
+    badgeLoading("Saving", false);
+    if (result) {
+      flow.next(index, { paymentSuccess: true });
+    }
+  };
+  // Once Stripe has actually charged the card, never show the card form
+  // again (resubmitting it would try to charge a second time) — only a
+  // retry of saveContract itself, with whatever's currently in flow.data.
+  if (succeededPaymentIntent) {
+    return (
+      <div className="space-y-4 rounded-lg border border-[#a6e00c] bg-[#fffaf3] p-4">
+        <p className="font-bold text-[#2d3d00]">
+          Payment received — we just need to finish setting up your contract.
+        </p>
+        {saveError && <p className="text-red-600">{saveError}</p>}
+        <p className="text-[13px] text-[#7d8760]">
+          If that&apos;s a field you need to fix (like your zip code), edit
+          it below, then try saving again — you won&apos;t be charged twice.
+        </p>
+        <div className="flex gap-3">
+          <Button
+            type="button"
+            variant="muted"
+            // Index 4 = SignupScreen ("Your Info") in NoAccountFlow, where
+            // zip/address/etc. are collected — this component already only
+            // makes sense inside that flow (it reads its flow.data fields).
+            onClick={() => scrollTo(flow.stepId(4))}
+            className="flex-1 cursor-pointer"
+          >
+            Edit my info
+          </Button>
+          <Button
+            type="button"
+            onClick={handleRetrySave}
+            disabled={loading}
+            className="flex-1 bg-primary disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          >
+            {loading ? "Saving..." : "Try saving again"}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <form className="space-y-4">
       {/* ============================================================
