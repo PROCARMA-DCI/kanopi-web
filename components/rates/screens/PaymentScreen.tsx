@@ -85,7 +85,8 @@ export function PaymentScreen({ index }: { index: number }) {
           metadata: {
             product_id: selectedCoverage.product_id,
             plan_id: selectedCoverage.plan_id,
-            price: Number(selectedCoverage.price),
+            rate_id: selectedCoverage.reserve_rate_id,
+            coverage_price: Number(selectedCoverage.price),
             PaymentThrough: 1, // CARD
             title: selectedCoverage.title,
             invoice_date: new Date().toISOString(),
