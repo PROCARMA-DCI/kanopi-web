@@ -1,11 +1,13 @@
 "use client";
 
+import { useLayout } from "@/app/providers/LayoutContext";
 import { fetching } from "@/lib/api/client";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe, type Stripe } from "@stripe/stripe-js";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { buildContractPayload } from "../buildContractPayload";
 import { planType } from "../data/coverages";
 import { RatesHeader } from "../RatesHeader";
 import { useFlow } from "../wizard/FlowProvider";
@@ -25,34 +27,88 @@ interface CreatePaymentIntentResult {
 /**
  * No-account · "Payment" (Figma 310:479) — the illustration + headline on
  * the left are static copy; the right column is Stripe's real card form.
- * Sets up the PaymentIntent + Stripe.js instance once on mount, then hands
- * both to <Elements> (StripeCheckoutCard needs that context for
- * useStripe()/useElements() and the Card*Element components to work at all).
+ *
+ * Setup, in order:
+ *  1. POST /kanopi/stage with the full contract payload — none of that
+ *     data (name, address, password, etc.) needs to touch Stripe. Gets
+ *     back a temp_id.
+ *  2. Create the PaymentIntent with that temp_id in its metadata.
+ *  3. Hand clientSecret + the Stripe.js instance to <Elements>
+ *     (StripeCheckoutCard needs that context for useStripe()/useElements()
+ *     and the Card*Element components to work at all) — plus tempId, so
+ *     it can poll for the webhook's result after Stripe confirms payment.
  */
 export function PaymentScreen({ index }: { index: number }) {
   const flow = useFlow();
   const rootRef = useRef<HTMLElement>(null);
+  const { DealerID } = useLayout();
   const selectedCoverage = flow.data.selectedCoverage as planType | null;
 
   useHeaderDominance(rootRef);
 
   const [clientSecret, setClientSecret] = useState("");
+  const [tempId, setTempId] = useState<string>("");
   const [stripePromise, setStripePromise] =
     useState<Promise<Stripe | null> | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">();
 
+  // PaymentScreen, once revealed, never unmounts (see NoAccountFlow) — so a
+  // plain mount-only effect can only ever stage/create the PaymentIntent
+  // once. Read the LATEST flow.data through a ref (not the effect's own
+  // closure) so re-runs triggered below always see the current data, not
+  // whatever it was the first time this screen appeared.
+  const flowDataRef = useRef(flow.data);
   useEffect(() => {
-    // `active` (not a permanent ref-lock) guards React 18/19 dev-mode's
-    // double effect invoke — a lock that never resets meant setup() could
-    // only ever run once per PaymentScreen mount for the rest of the tab's
-    // life (and PaymentScreen, once revealed, never unmounts — see
-    // NoAccountFlow), so re-testing needed a hard page reload every time
-    // instead of just navigating Back then Next again.
+    flowDataRef.current = flow.data;
+  }, [flow.data]);
+  // Key of the payload actually staged last time — lets a re-run skip
+  // re-staging/re-creating the PaymentIntent when nothing changed, and
+  // re-do both when it did (e.g. Back → fix zip → forward again).
+  const stagedPayloadKeyRef = useRef("");
+  const runningRef = useRef(false);
+
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el) return;
     let active = true;
 
     const setup = async () => {
       if (!selectedCoverage) {
         setStatus("error");
+        return;
+      }
+      if (runningRef.current) return;
+
+      const payload = buildContractPayload(
+        flowDataRef.current,
+        DealerID,
+        selectedCoverage,
+      );
+      const payloadKey = JSON.stringify(payload);
+      if (payloadKey === stagedPayloadKeyRef.current) return;
+
+      runningRef.current = true;
+
+      // Stage the contract data first — the PaymentIntent only ever
+      // carries a reference (temp_id) to it, never the data itself.
+      const stageRes = await fetching<{ temp_id?: string }>({
+        url: "/api/kanopi/stage",
+        method: "POST",
+        body: payload,
+      });
+      if (!active) {
+        runningRef.current = false;
+        return;
+      }
+      // The endpoint's JSON is flat ({ success, temp_id }), not nested
+      // under "data"/"message" — read it straight off the result. Cast
+      // because ApiResult's index signature types unlisted fields as
+      // `unknown`, not the shape passed to fetching<T>().
+      const stagedTempId = stageRes?.temp_id as string | undefined;
+      if (!stageRes.ok || !stagedTempId) {
+        toast.error("Couldn't prepare your contract — please try again.");
+        setStatus("error");
+        runningRef.current = false;
         return;
       }
 
@@ -61,10 +117,14 @@ export function PaymentScreen({ index }: { index: number }) {
         method: "GET",
       });
       const publishableKey = configRes.data?.publishableKey;
-      if (!active) return;
+      if (!active) {
+        runningRef.current = false;
+        return;
+      }
       if (!configRes.ok || !publishableKey) {
         toast.error("Stripe key not found");
         setStatus("error");
+        runningRef.current = false;
         return;
       }
 
@@ -83,6 +143,7 @@ export function PaymentScreen({ index }: { index: number }) {
             },
           ],
           metadata: {
+            temp_id: stagedTempId,
             product_id: selectedCoverage.product_id,
             plan_id: selectedCoverage.plan_id,
             rate_id: selectedCoverage.reserve_rate_id,
@@ -94,24 +155,45 @@ export function PaymentScreen({ index }: { index: number }) {
         },
       });
 
-      if (!active) return;
+      if (!active) {
+        runningRef.current = false;
+        return;
+      }
       const secret = intentRes.message?.clientSecret;
       if (!intentRes.ok || !secret) {
         toast.error("Couldn't start the payment — please try again.");
         setStatus("error");
+        runningRef.current = false;
         return;
       }
 
+      stagedPayloadKeyRef.current = payloadKey;
       setStripePromise(stripePromiseCache);
       setClientSecret(secret);
+      setTempId(stagedTempId);
       setStatus("ready");
+      runningRef.current = false;
     };
 
     setup();
+
+    // Re-check every time this screen becomes the active view again —
+    // covers Back → edit an earlier screen → scroll forward again,
+    // which doesn't remount PaymentScreen and wouldn't otherwise call
+    // /api/kanopi/stage a second time.
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setup();
+      },
+      { threshold: 0.5 },
+    );
+    io.observe(el);
+
     return () => {
       active = false;
+      io.disconnect();
     };
-  }, [selectedCoverage]);
+  }, [selectedCoverage, DealerID]);
 
   return (
     <section
@@ -162,7 +244,11 @@ export function PaymentScreen({ index }: { index: number }) {
           <div className="flex flex-col gap-6 lg:pl-12">
             <p className="text-[28px] text-[#7b8466]">Enter Card Information</p>
             <Elements stripe={stripePromise} options={{ clientSecret }}>
-              <StripeCheckoutCard clientSecret={clientSecret} index={index} />
+              <StripeCheckoutCard
+                clientSecret={clientSecret}
+                tempId={tempId}
+                index={index}
+              />
             </Elements>
             <p className="text-center text-[14px] text-[#2d3d00]">
               By clicking Pay, you agree to the Link Terms and Privacy Policy.

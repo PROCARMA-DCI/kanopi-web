@@ -39,6 +39,10 @@ const RESOURCE_BACKENDS: Record<string, string> = {
   vindecode: "https://fastapi.mypcp.us",
 
   stripe: fastapi ?? "http://localhost:4242",
+  // Kanopi-specific contract staging/webhook routes — same FastAPI app as
+  // `stripe` above, just a different router prefix (see
+  // fastapi/kanopiContractRoute.py).
+  kanopi: fastapi ?? "http://localhost:4242",
 };
 
 async function proxy(request: NextRequest, slugParts: string[]) {
@@ -61,6 +65,13 @@ async function proxy(request: NextRequest, slugParts: string[]) {
     const contentType = request.headers.get("content-type");
     if (contentType) headers["content-type"] = contentType;
   }
+
+  // Stripe's webhook (POST /api/stripe/webhooks) signs the request with
+  // this header — FastAPI's verify_stripe_webhook() needs the EXACT same
+  // value to check the signature. Without forwarding it, verification
+  // fails on every delivery and the handler never runs at all.
+  const stripeSignature = request.headers.get("stripe-signature");
+  if (stripeSignature) headers["stripe-signature"] = stripeSignature;
 
   try {
     const { status, envelope } = await backendEnvelope(
