@@ -1,5 +1,6 @@
 "use client";
 
+import { useLoader } from "@/app/providers/LoaderContext";
 import { useLayout } from "@/app/providers/LayoutContext";
 import { fetching } from "@/lib/api/client";
 import { Elements } from "@stripe/react-stripe-js";
@@ -42,6 +43,7 @@ export function PaymentScreen({ index }: { index: number }) {
   const flow = useFlow();
   const rootRef = useRef<HTMLElement>(null);
   const { DealerID } = useLayout();
+  const { badgeLoading: setBadgeLoading } = useLoader();
   const selectedCoverage = flow.data.selectedCoverage as planType | null;
 
   useHeaderDominance(rootRef);
@@ -51,6 +53,10 @@ export function PaymentScreen({ index }: { index: number }) {
   const [stripePromise, setStripePromise] =
     useState<Promise<Stripe | null> | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">();
+  // Bumped every time a NEW PaymentIntent is actually created — used as
+  // <Elements key>, since Elements does not react to a changed
+  // clientSecret prop on its own; it only picks up a new one on remount.
+  const [piVersion, setPiVersion] = useState(0);
 
   // PaymentScreen, once revealed, never unmounts (see NoAccountFlow) — so a
   // plain mount-only effect can only ever stage/create the PaymentIntent
@@ -66,6 +72,9 @@ export function PaymentScreen({ index }: { index: number }) {
   // re-do both when it did (e.g. Back → fix zip → forward again).
   const stagedPayloadKeyRef = useRef("");
   const runningRef = useRef(false);
+  // Lets handleRetryPayment (a JSX event handler, outside the effect) call
+  // the same setup() the effect uses, instead of duplicating it.
+  const setupRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     const el = rootRef.current;
@@ -88,93 +97,102 @@ export function PaymentScreen({ index }: { index: number }) {
       if (payloadKey === stagedPayloadKeyRef.current) return;
 
       runningRef.current = true;
+      // On so there's IMMEDIATE feedback the retry click registered, not
+      // just once create-payment-intent starts — staging + fetching the
+      // Stripe config happen first and were previously silent.
+      setBadgeLoading("Loading", true);
 
-      // Stage the contract data first — the PaymentIntent only ever
-      // carries a reference (temp_id) to it, never the data itself.
-      const stageRes = await fetching<{ temp_id?: string }>({
-        url: "/api/kanopi/stage",
-        method: "POST",
-        body: payload,
-      });
-      if (!active) {
-        runningRef.current = false;
-        return;
-      }
-      // The endpoint's JSON is flat ({ success, temp_id }), not nested
-      // under "data"/"message" — read it straight off the result. Cast
-      // because ApiResult's index signature types unlisted fields as
-      // `unknown`, not the shape passed to fetching<T>().
-      const stagedTempId = stageRes?.temp_id as string | undefined;
-      if (!stageRes.ok || !stagedTempId) {
-        toast.error("Couldn't prepare your contract — please try again.");
-        setStatus("error");
-        runningRef.current = false;
-        return;
-      }
+      // try/catch: any thrown error here (a rejected fetch from a
+      // dropped/restarted backend, for instance) used to die as a silent
+      // unhandled rejection — no toast, no state change, indistinguishable
+      // from the click doing nothing at all.
+      try {
+        // Stage the contract data first — the PaymentIntent only ever
+        // carries a reference (temp_id) to it, never the data itself.
+        const stageRes = await fetching<{ temp_id?: string }>({
+          url: "/api/kanopi/stage",
+          method: "POST",
+          body: payload,
+        });
+        if (!active) return;
+        // The endpoint's JSON is flat ({ success, temp_id }), not nested
+        // under "data"/"message" — read it straight off the result. Cast
+        // because ApiResult's index signature types unlisted fields as
+        // `unknown`, not the shape passed to fetching<T>().
+        const stagedTempId = stageRes?.temp_id as string | undefined;
+        if (!stageRes.ok || !stagedTempId) {
+          toast.error("Couldn't prepare your contract — please try again.");
+          setStatus("error");
+          return;
+        }
 
-      const configRes = await fetching<{ publishableKey?: string }>({
-        url: "/api/stripe/config",
-        method: "GET",
-      });
-      const publishableKey = configRes.data?.publishableKey;
-      if (!active) {
-        runningRef.current = false;
-        return;
-      }
-      if (!configRes.ok || !publishableKey) {
-        toast.error("Stripe key not found");
-        setStatus("error");
-        runningRef.current = false;
-        return;
-      }
+        const configRes = await fetching<{ publishableKey?: string }>({
+          url: "/api/stripe/config",
+          method: "GET",
+        });
+        const publishableKey = configRes.data?.publishableKey;
+        if (!active) return;
+        if (!configRes.ok || !publishableKey) {
+          toast.error("Stripe key not found");
+          setStatus("error");
+          return;
+        }
 
-      if (!stripePromiseCache) stripePromiseCache = loadStripe(publishableKey);
+        if (!stripePromiseCache)
+          stripePromiseCache = loadStripe(publishableKey);
 
-      const intentRes = await fetching<CreatePaymentIntentResult>({
-        url: "/api/stripe/create-payment-intent",
-        method: "POST",
-        badgeLoading: "Loading",
-        body: {
-          items: [
-            {
+        const intentRes = await fetching<CreatePaymentIntentResult>({
+          url: "/api/stripe/create-payment-intent",
+          method: "POST",
+          body: {
+            items: [
+              {
+                title: selectedCoverage.title,
+                amount: Math.round(Number(selectedCoverage.price) * 100),
+                quantity: 1,
+              },
+            ],
+            metadata: {
+              temp_id: stagedTempId,
+              product_id: selectedCoverage.product_id,
+              plan_id: selectedCoverage.plan_id,
+              rate_id: selectedCoverage.reserve_rate_id,
+              coverage_price: Number(selectedCoverage.price),
+              PaymentThrough: 1, // CARD
               title: selectedCoverage.title,
-              amount: Math.round(Number(selectedCoverage.price) * 100),
-              quantity: 1,
+              invoice_date: new Date().toISOString(),
             },
-          ],
-          metadata: {
-            temp_id: stagedTempId,
-            product_id: selectedCoverage.product_id,
-            plan_id: selectedCoverage.plan_id,
-            rate_id: selectedCoverage.reserve_rate_id,
-            coverage_price: Number(selectedCoverage.price),
-            PaymentThrough: 1, // CARD
-            title: selectedCoverage.title,
-            invoice_date: new Date().toISOString(),
           },
-        },
-      });
+        });
 
-      if (!active) {
-        runningRef.current = false;
-        return;
-      }
-      const secret = intentRes.message?.clientSecret;
-      if (!intentRes.ok || !secret) {
-        toast.error("Couldn't start the payment — please try again.");
-        setStatus("error");
-        runningRef.current = false;
-        return;
-      }
+        if (!active) return;
+        const secret = intentRes.message?.clientSecret;
+        if (!intentRes.ok || !secret) {
+          toast.error("Couldn't start the payment — please try again.");
+          setStatus("error");
+          return;
+        }
 
-      stagedPayloadKeyRef.current = payloadKey;
-      setStripePromise(stripePromiseCache);
-      setClientSecret(secret);
-      setTempId(stagedTempId);
-      setStatus("ready");
-      runningRef.current = false;
+        stagedPayloadKeyRef.current = payloadKey;
+        setStripePromise(stripePromiseCache);
+        setClientSecret(secret);
+        setTempId(stagedTempId);
+        setStatus("ready");
+        // A genuinely new PaymentIntent — bump so <Elements key> remounts
+        // and actually picks it up (see the piVersion comment above).
+        setPiVersion((v) => v + 1);
+      } catch {
+        if (active) {
+          toast.error("Couldn't start the payment — please try again.");
+          setStatus("error");
+        }
+      } finally {
+        setBadgeLoading("Loading", false);
+        runningRef.current = false;
+      }
     };
 
+    setupRef.current = setup;
     setup();
 
     // Re-check every time this screen becomes the active view again —
@@ -193,7 +211,17 @@ export function PaymentScreen({ index }: { index: number }) {
       active = false;
       io.disconnect();
     };
-  }, [selectedCoverage, DealerID]);
+  }, [selectedCoverage, DealerID, setBadgeLoading]);
+
+  // The old PaymentIntent is dead once the backend has voided it (contract
+  // save failed under manual capture — see StripeCheckoutCard), so "try
+  // again" here means a brand new PaymentIntent, not resubmitting the same
+  // one. stagedPayloadKeyRef is cleared first so setup() doesn't just skip
+  // the re-run for having "already staged this exact data".
+  const handleRetryPayment = () => {
+    stagedPayloadKeyRef.current = "";
+    setupRef.current();
+  };
 
   return (
     <section
@@ -243,11 +271,16 @@ export function PaymentScreen({ index }: { index: number }) {
           {/* Right: Stripe card form */}
           <div className="flex flex-col gap-6 lg:pl-12">
             <p className="text-[28px] text-[#7b8466]">Enter Card Information</p>
-            <Elements stripe={stripePromise} options={{ clientSecret }}>
+            <Elements
+              key={piVersion}
+              stripe={stripePromise}
+              options={{ clientSecret }}
+            >
               <StripeCheckoutCard
                 clientSecret={clientSecret}
                 tempId={tempId}
                 index={index}
+                onRetryPayment={handleRetryPayment}
               />
             </Elements>
             <p className="text-center text-[14px] text-[#2d3d00]">
