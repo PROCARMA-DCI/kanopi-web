@@ -17,7 +17,6 @@ import type {
   StripeExpressCheckoutElementConfirmEvent,
 } from "@stripe/stripe-js";
 import { useRef, useState } from "react";
-import { toast } from "sonner";
 import { planType } from "../data/coverages";
 import { useFlow } from "../wizard/FlowProvider";
 
@@ -28,6 +27,11 @@ interface StripeCheckoutCardProps {
   tempId: string;
   /** This screen's step index — advances the flow once the contract is saved. */
   index: number;
+  /** Backend uses manual capture — on a failed contract save it CANCELS
+   * the PaymentIntent (no charge happens), so recovering means asking
+   * PaymentScreen for a brand new one, never resubmitting this same
+   * clientSecret. */
+  onRetryPayment: () => void;
 }
 
 // How long to poll /kanopi/payment-status before giving up and telling the
@@ -42,6 +46,7 @@ const StripeCheckoutCard = ({
   clientSecret,
   tempId,
   index,
+  onRetryPayment,
 }: StripeCheckoutCardProps) => {
   const flow = useFlow();
   const { scrollTo } = useScroll();
@@ -52,14 +57,39 @@ const StripeCheckoutCard = ({
   const selectedCoverage = flow.data.selectedCoverage as planType;
   const coverage_price = selectedCoverage?.price;
 
-  // Set once Stripe actually confirms the charge. From that point on the
-  // card is charged — no matter what the webhook/contract-save does, we
-  // must never run confirmCardPayment/confirmPayment again, or the
-  // customer gets double-charged. A save failure (e.g. bad zip) only ever
-  // retries the SAVE, never Stripe.
+  // Set once Stripe actually confirms this authorization (this component's
+  // PaymentIntent is manual-capture — see onRetryPayment). From that point
+  // on, this SAME clientSecret must never be confirmed again. Recovering
+  // from a failure means PaymentScreen creating a brand new PaymentIntent,
+  // which remounts this whole component (see the <Elements key> it uses),
+  // not resubmitting from here.
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const [saveError, setSaveError] = useState("");
+  // Distinguishes "we know it failed, the charge was voided, safe to pay
+  // again" from "we don't know yet, don't offer to charge again" (the
+  // webhook might still land after the poll gives up).
+  const [pollOutcome, setPollOutcome] = useState<"failed" | "timeout" | "">(
+    "",
+  );
+  const [cardError, setCardError] = useState("");
   const pollActive = useRef(false);
+  // Guards against a double-submit (fast double click, or the Enter key
+  // firing while a confirm is already in flight) triggering
+  // confirmCardPayment/confirmPayment twice on the same PaymentIntent —
+  // the loader's `loading` flag alone isn't synchronous enough to catch
+  // a second click in the same tick.
+  const submittingRef = useRef(false);
+
+  // Stripe's real error object always has a `.code` — a canceled
+  // PaymentIntent (e.g. abandoned past its window, or already used) can
+  // never be confirmed again; no retry button can fix that, only a fresh
+  // PaymentIntent (i.e. reloading this screen) can.
+  const describeStripeError = (error: { code?: string; message?: string }) => {
+    if (error.code === "payment_intent_unexpected_state") {
+      return "This payment session has expired or was already used. Please refresh the page to start a new one.";
+    }
+    return error.message || "Something went wrong processing your card.";
+  };
 
   const [cardState, setCardState] = useState({
     cardNumber: false,
@@ -117,6 +147,7 @@ const StripeCheckoutCard = ({
 
       if (status === "failed") {
         badgeLoading("Saving", false);
+        setPollOutcome("failed");
         setSaveError(
           (res.message as string) ||
             "We couldn't save your contract — please check your info and try again.",
@@ -129,15 +160,18 @@ const StripeCheckoutCard = ({
     }
 
     badgeLoading("Saving", false);
+    setPollOutcome("timeout");
     setSaveError(
-      "This is taking longer than expected. Your payment went through — tap below to check again.",
+      "This is taking longer than expected — your card was authorized but we haven't confirmed the contract yet. Tap below to check again.",
     );
   };
 
   const handleExpressCheckoutConfirm = async (
     event: StripeExpressCheckoutElementConfirmEvent,
   ) => {
-    if (!stripe || !elements) return;
+    if (!stripe || !elements || submittingRef.current) return;
+    submittingRef.current = true;
+    setCardError("");
 
     const { error, paymentIntent } = await stripe.confirmPayment({
       elements,
@@ -150,24 +184,36 @@ const StripeCheckoutCard = ({
 
     if (error) {
       event.paymentFailed({ reason: "fail" });
-      toast.error(error.message);
+      setCardError(describeStripeError(error));
+      submittingRef.current = false;
       return;
     }
 
-    if (paymentIntent?.status === "succeeded") {
+    // "requires_capture" is the EXPECTED status here, not an edge case —
+    // the backend uses manual capture (authorize now, capture/cancel later
+    // from the webhook once it knows whether saveContract succeeded), so
+    // the card is never actually charged at this point yet.
+    if (
+      paymentIntent?.status === "succeeded" ||
+      paymentIntent?.status === "requires_capture"
+    ) {
       setPaymentConfirmed(true);
       await pollForResult();
+    } else {
+      submittingRef.current = false;
     }
   };
 
   const handleSubmit = async (event: React.SyntheticEvent) => {
     event.preventDefault();
 
-    if (!stripe || !elements) return;
+    if (!stripe || !elements || submittingRef.current) return;
 
     const cardNumberElement = elements.getElement(CardNumberElement);
     if (!cardNumberElement) return;
 
+    submittingRef.current = true;
+    setCardError("");
     badgeLoading("Saving", true);
     const { error, paymentIntent } = await stripe.confirmCardPayment(
       clientSecret,
@@ -179,60 +225,56 @@ const StripeCheckoutCard = ({
     );
 
     if (error) {
-      toast.error("Error: " + error.message);
+      setCardError(describeStripeError(error));
       badgeLoading("Saving", false);
+      submittingRef.current = false;
       return;
     }
 
-    if (paymentIntent.status === "succeeded") {
+    // "requires_capture" is the EXPECTED status here, not an edge case —
+    // the backend uses manual capture (authorize now, capture/cancel later
+    // from the webhook once it knows whether saveContract succeeded), so
+    // the card is never actually charged at this point yet.
+    if (
+      paymentIntent.status === "succeeded" ||
+      paymentIntent.status === "requires_capture"
+    ) {
       setPaymentConfirmed(true);
       await pollForResult();
     } else {
       badgeLoading("Saving", false);
+      submittingRef.current = false;
     }
   };
 
-  // The card is already charged at this point — this only ever retries
-  // the SAVE (immediately, instead of waiting on Stripe's own slow
-  // webhook-retry schedule), never Stripe again.
-  const handleRetrySave = async () => {
+  // Re-poll without re-charging — used when the poll simply timed out and
+  // the real outcome is still unknown (the webhook may yet land).
+  const handleCheckAgain = () => {
     setSaveError("");
-    badgeLoading("Saving", true);
-    const res = await fetching({
-      url: `/api/kanopi/retry-save/${tempId}`,
-      method: "POST",
-    });
-    badgeLoading("Saving", false);
-
-    if (res.ok && res.success === 1) {
-      flow.next(index, { paymentSuccess: true });
-      return;
-    }
-
-    setSaveError(
-      (res.message as string) ||
-        "Still couldn't save your contract — please check your info and try again.",
-    );
+    pollForResult();
   };
 
-  // Once Stripe has actually charged the card, never show the card form
-  // again (resubmitting it would try to charge a second time) — only
-  // ever a retry of saving the contract, with whatever's currently staged.
+  // The card was only AUTHORIZED, never actually charged (manual capture —
+  // see onRetryPayment's doc comment). A "failed" contract save means the
+  // backend already canceled that authorization, so recovering means a
+  // brand new PaymentIntent, not resubmitting this one.
   if (paymentConfirmed) {
     return (
       <div className="space-y-4 rounded-lg border border-[#a6e00c] bg-[#fffaf3] p-4">
         <p className="font-bold text-[#2d3d00]">
-          {saveError
-            ? "Payment received — we just need to finish setting up your contract."
-            : "Payment received — setting up your contract..."}
+          {pollOutcome === "failed"
+            ? "We couldn't finish setting up your contract."
+            : saveError
+              ? "Still working on your contract..."
+              : "Setting up your contract..."}
         </p>
         {saveError && <p className="text-red-600">{saveError}</p>}
-        {saveError && (
+
+        {pollOutcome === "failed" && (
           <>
             <p className="text-[13px] text-[#7d8760]">
-              If that&apos;s a field you need to fix (like your zip code),
-              edit it below, then try saving again — you won&apos;t be
-              charged twice.
+              Your card was not charged. Fix the field above if you need to,
+              then try again.
             </p>
             <div className="flex gap-3">
               <Button
@@ -248,14 +290,25 @@ const StripeCheckoutCard = ({
               </Button>
               <Button
                 type="button"
-                onClick={handleRetrySave}
+                onClick={onRetryPayment}
                 disabled={loading}
                 className="flex-1 bg-primary disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
-                {loading ? "Saving..." : "Try saving again"}
+                {loading ? "Preparing new payment..." : "Try again"}
               </Button>
             </div>
           </>
+        )}
+
+        {pollOutcome === "timeout" && (
+          <Button
+            type="button"
+            onClick={handleCheckAgain}
+            disabled={loading}
+            className="w-full bg-primary disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          >
+            {loading ? "Checking..." : "Check again"}
+          </Button>
         )}
       </div>
     );
@@ -338,8 +391,14 @@ const StripeCheckoutCard = ({
         </div>
       </div>
 
+      {cardError && (
+        <p className="text-[13px] text-red-600" role="alert">
+          {cardError}
+        </p>
+      )}
+
       <Button
-        type="submit"
+        type="button"
         onClick={handleSubmit}
         disabled={loading || !isFormComplete}
         className="w-full bg-primary disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"

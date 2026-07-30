@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { DemoCoverages } from "../data/coverages";
 import { CoverageScreen } from "../screens/CoverageScreen";
 import { ConfirmCoverageScreen } from "../screens/ConfirmCoverageScreen";
 import { CreateAccountScreen } from "../screens/CreateAccountScreen";
@@ -18,11 +20,51 @@ import { FlowProvider, useFlow } from "../wizard/FlowProvider";
 // "existing plan" screen/branch to route between anymore.
 const TOTAL = 8;
 
+// ⚠️ TEMPORARY — testing PaymentScreen/StripeCheckoutCard/webhook only.
+// Set back to false when done: fills every earlier screen with dummy data
+// and jumps straight to PaymentScreen on load, so you don't have to click
+// through the whole wizard on every reload.
+const JUMP_TO_PAYMENT_FOR_TESTING = true;
+
+/** Renders nothing — just fires flow.next() through every earlier step once. */
+function TestJumpToPayment() {
+  const flow = useFlow();
+
+  useEffect(() => {
+    if (flow.revealed > 1) return; // already jumped (or user navigated manually)
+
+    flow.next(0, { firstName: "Test", lastName: "User" });
+    flow.next(1, {
+      make: "Toyota",
+      model: "Camry",
+      year: "2020",
+      mileage: "45000",
+      vin: "1HGCM82633A004352",
+    });
+    flow.next(2, { selectedCoverage: DemoCoverages[0] });
+    flow.next(3, {});
+    flow.next(4, {
+      email: "test@example.com",
+      phone: "5551234567",
+      zip: "90210",
+      streetAddress: "123 Test St",
+      apt: "",
+      password: "TestPassword123!",
+    });
+    flow.next(5, { sendVia: "email" });
+    flow.next(6, {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return null;
+}
+
 function Screens() {
   const flow = useFlow();
 
   return (
     <>
+      {JUMP_TO_PAYMENT_FOR_TESTING && <TestJumpToPayment />}
       {flow.revealed >= 1 && <CreateAccountScreen index={0} />}
       {flow.revealed >= 2 && <VehicleScreen index={1} />}
       {flow.revealed >= 3 && <CoverageScreen index={2} />}
