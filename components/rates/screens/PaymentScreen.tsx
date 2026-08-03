@@ -1,7 +1,7 @@
 "use client";
 
-import { useLoader } from "@/app/providers/LoaderContext";
 import { useLayout } from "@/app/providers/LayoutContext";
+import { useLoader } from "@/app/providers/LoaderContext";
 import { fetching } from "@/lib/api/client";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe, type Stripe } from "@stripe/stripe-js";
@@ -21,8 +21,7 @@ let stripePromiseCache: Promise<Stripe | null> | null = null;
 
 interface CreatePaymentIntentResult {
   clientSecret?: string;
-  invoice_no?: string;
-  TransactionID?: string;
+  paymentIntentId?: string;
 }
 
 /**
@@ -166,7 +165,9 @@ export function PaymentScreen({ index }: { index: number }) {
         });
 
         if (!active) return;
-        const secret = intentRes.message?.clientSecret;
+
+        const secret = intentRes.data?.clientSecret;
+
         if (!intentRes.ok || !secret) {
           toast.error("Couldn't start the payment — please try again.");
           setStatus("error");

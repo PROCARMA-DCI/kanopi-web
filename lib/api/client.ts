@@ -5,7 +5,10 @@
 // Client-only, like the loader it drives — there's no server-side
 // equivalent of showing a spinner, since a Route Handler has no live UI to
 // show one in. Use lib/api/server.ts (backendFetch/backendEnvelope) there.
-import { setBadgeLoading, setGlobalLoading } from "@/app/providers/LoaderContext";
+import {
+  setBadgeLoading,
+  setGlobalLoading,
+} from "@/app/providers/LoaderContext";
 
 /** FormData → plain object (files pass through as File). */
 export const formDataToObject = (
@@ -168,7 +171,7 @@ export async function fetching<T = unknown>({
       ...(payload ?? {}),
       ok: res.ok,
       status: res.status,
-      message: (payload?.data ?? payload?.message) as T | undefined,
+      data: (payload?.data ?? payload?.message) as T | undefined,
       detail: payload?.detail as string | undefined,
       success: payload?.success as 1 | 0 | number | undefined,
     };
