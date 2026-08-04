@@ -271,24 +271,39 @@ export function PaymentScreen({ index }: { index: number }) {
             />
           </div>
 
-          {/* Right: Stripe card form */}
+          {/* Right: Stripe card form — swapped for a success message once
+              flow.finished (this screen freezes right after, and the page
+              auto-scrolls to ResultScreen, but it should never show stale
+              "Enter Card Information" copy if seen for that instant, or if
+              scrolled back to manually afterward). */}
           <div className="flex flex-col gap-6 lg:pl-12">
-            <p className="text-[28px] text-[#7b8466]">Enter Card Information</p>
-            <Elements
-              key={piVersion}
-              stripe={stripePromise}
-              options={{ clientSecret }}
-            >
-              <StripeCheckoutCard
-                clientSecret={clientSecret}
-                tempId={tempId}
-                index={index}
-                onRetryPayment={handleRetryPayment}
-              />
-            </Elements>
-            <p className="text-center text-[14px] text-[#2d3d00]">
-              By clicking Pay, you agree to the Link Terms and Privacy Policy.
-            </p>
+            {flow.finished ? (
+              <p className="text-[28px] font-semibold text-[#2d3d00]">
+                Your payment was successful! Your contract has been created.
+              </p>
+            ) : (
+              <>
+                <p className="text-[28px] text-[#7b8466]">
+                  Enter Card Information
+                </p>
+                <Elements
+                  key={piVersion}
+                  stripe={stripePromise}
+                  options={{ clientSecret }}
+                >
+                  <StripeCheckoutCard
+                    clientSecret={clientSecret}
+                    tempId={tempId}
+                    index={index}
+                    onRetryPayment={handleRetryPayment}
+                  />
+                </Elements>
+                <p className="text-center text-[14px] text-[#2d3d00]">
+                  By clicking Pay, you agree to the Link Terms and Privacy
+                  Policy.
+                </p>
+              </>
+            )}
           </div>
         </div>
       )}

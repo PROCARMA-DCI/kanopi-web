@@ -11,9 +11,10 @@ import { useHeaderDominance } from "../wizard/useHeaderDominance";
 
 /**
  * Shared closing screen. Reads the chosen coverage out of the flow's collected
- * `data` and animates its price up. Back → last step, Start over → entry.
+ * `data` and animates its price up. The customer already has an account and a
+ * contract at this point, so the closing action is "Login", not "Start over".
  */
-export function ResultScreen() {
+export function ResultScreen({ onGoToLogin }: { onGoToLogin: () => void }) {
   const flow = useFlow();
   const rootRef = useRef<HTMLElement>(null);
   const priceRef = useRef<HTMLSpanElement>(null);
@@ -111,9 +112,9 @@ export function ResultScreen() {
               type="button"
               className="max-w-[300px] w-full"
               variant="primary"
-              onClick={flow.restart}
+              onClick={onGoToLogin}
             >
-              Start over
+              Login
             </Button>
           </div>
         </div>

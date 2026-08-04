@@ -62,7 +62,7 @@ const JUMP_TO_PAYMENT_FOR_TESTING = true;
 //   return null;
 // }
 
-function Screens() {
+function Screens({ onGoToLogin }: { onGoToLogin: () => void }) {
   const flow = useFlow();
 
   return (
@@ -88,15 +88,21 @@ function Screens() {
         {flow.revealed >= 7 && <OtpScreen index={6} />}
         {flow.revealed >= 8 && <PaymentScreen index={7} />}
       </div>
-      {flow.finished && <ResultScreen />}
+      {flow.finished && <ResultScreen onGoToLogin={onGoToLogin} />}
     </>
   );
 }
 
-export function NoAccountFlow({ onRestart }: { onRestart: () => void }) {
+export function NoAccountFlow({
+  onRestart,
+  onGoToLogin,
+}: {
+  onRestart: () => void;
+  onGoToLogin: () => void;
+}) {
   return (
     <FlowProvider flowKey="no-account" total={TOTAL} onRestart={onRestart}>
-      <Screens />
+      <Screens onGoToLogin={onGoToLogin} />
     </FlowProvider>
   );
 }

@@ -32,11 +32,20 @@ export function RatesFlow() {
     scrollTo("rates-entry");
   }
 
+  // After a completed purchase there's nothing left to "start over" —
+  // the customer already has an account, so ResultScreen sends them
+  // straight into the login flow instead of back to the entry choice.
+  function handleGoToLogin() {
+    setFlowKey("yes-account");
+  }
+
   return (
     <div id="check-rates">
       <EntryScreen selected={flowKey} onSelect={handleEntry} />
 
-      {flowKey === "no-account" && <NoAccountFlow onRestart={handleRestart} />}
+      {flowKey === "no-account" && (
+        <NoAccountFlow onRestart={handleRestart} onGoToLogin={handleGoToLogin} />
+      )}
       {flowKey === "yes-account" && <YesAccountFlow onRestart={handleRestart} />}
     </div>
   );
