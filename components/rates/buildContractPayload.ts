@@ -8,6 +8,7 @@ export interface ContractPayload {
   phone: string;
   zip: string;
   address: string;
+  city: string;
   unit_address?: string;
   dealer_id: number;
   make_id: string;
@@ -39,6 +40,7 @@ export function buildContractPayload(
     phone: (data.phone as string) ?? "",
     zip: (data.zip as string) ?? "",
     address: (data.streetAddress as string) ?? "",
+    city: (data.city as string) ?? "",
     unit_address: (data.apt as string) ?? "",
     dealer_id: dealerId,
     make_id: (data.make as string) ?? "",

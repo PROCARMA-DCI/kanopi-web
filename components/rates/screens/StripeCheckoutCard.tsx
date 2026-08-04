@@ -68,9 +68,7 @@ const StripeCheckoutCard = ({
   // Distinguishes "we know it failed, the charge was voided, safe to pay
   // again" from "we don't know yet, don't offer to charge again" (the
   // webhook might still land after the poll gives up).
-  const [pollOutcome, setPollOutcome] = useState<"failed" | "timeout" | "">(
-    "",
-  );
+  const [pollOutcome, setPollOutcome] = useState<"failed" | "timeout" | "">("");
   const [cardError, setCardError] = useState("");
   const pollActive = useRef(false);
   // Guards against a double-submit (fast double click, or the Enter key
