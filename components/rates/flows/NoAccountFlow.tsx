@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { DemoCoverages } from "../data/coverages";
 import { ConfirmCoverageScreen } from "../screens/ConfirmCoverageScreen";
 import { CoverageScreen } from "../screens/CoverageScreen";
 import { CreateAccountScreen } from "../screens/CreateAccountScreen";
@@ -25,42 +27,42 @@ const TOTAL = 8;
 const JUMP_TO_PAYMENT_FOR_TESTING = true;
 
 /** Renders nothing — just fires flow.next() through every earlier step once. */
-// function TestJumpToPayment() {
-//   const flow = useFlow();
+function TestJumpToPayment() {
+  const flow = useFlow();
 
-//   useEffect(() => {
-//     if (flow.revealed > 1) return; // already jumped (or user navigated manually)
+  useEffect(() => {
+    if (flow.revealed > 1) return; // already jumped (or user navigated manually)
 
-//     flow.next(0, { firstName: "Test", lastName: "User" });
-//     flow.next(1, {
-//       make: "Toyota",
-//       model: "Camry",
-//       year: "2020",
-//       mileage: "45000",
-//       vin: "1HGCM82633A004352",
-//     });
-//     // DemoCoverages[2].plan_id is "227190" — an actual numeric-looking plan
-//     // id, unlike DemoCoverages[0]'s "powertrain-plus" slug. buildContractPayload
-//     // reads plan_id off selectedCoverage itself (selectedCoverage.plan_id),
-//     // not off a top-level flow.data.plan_id — there's no separate field to
-//     // set for this, picking the right DemoCoverages entry IS the fix.
-//     flow.next(2, { selectedCoverage: DemoCoverages[2] });
-//     flow.next(3, {});
-//     flow.next(4, {
-//       email: "test@example.com",
-//       phone: "5551234567",
-//       zip: "90210",
-//       streetAddress: "123 Test St",
-//       apt: "",
-//       password: "TestPassword123!",
-//     });
-//     flow.next(5, { sendVia: "email" });
-//     flow.next(6, {});
-//     // eslint-disable-next-line react-hooks/exhaustive-deps
-//   }, []);
+    flow.next(0, { firstName: "Test", lastName: "User" });
+    flow.next(1, {
+      make: "Toyota",
+      model: "Camry",
+      year: "2020",
+      mileage: "45000",
+      vin: "1HGCM82633A004352",
+    });
+    // DemoCoverages[2].plan_id is "227190" — an actual numeric-looking plan
+    // id, unlike DemoCoverages[0]'s "powertrain-plus" slug. buildContractPayload
+    // reads plan_id off selectedCoverage itself (selectedCoverage.plan_id),
+    // not off a top-level flow.data.plan_id — there's no separate field to
+    // set for this, picking the right DemoCoverages entry IS the fix.
+    flow.next(2, { selectedCoverage: DemoCoverages[2] });
+    flow.next(3, {});
+    flow.next(4, {
+      email: "test@example.com",
+      phone: "5551234567",
+      zip: "90210",
+      streetAddress: "123 Test St",
+      apt: "",
+      password: "TestPassword123!",
+    });
+    flow.next(5, { sendVia: "email" });
+    flow.next(6, {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-//   return null;
-// }
+  return null;
+}
 
 function Screens() {
   const flow = useFlow();
@@ -78,7 +80,7 @@ function Screens() {
           flow.finished ? "pointer-events-none select-none opacity-60" : ""
         }
       >
-        {/* {JUMP_TO_PAYMENT_FOR_TESTING && <TestJumpToPayment />} */}
+        {JUMP_TO_PAYMENT_FOR_TESTING && <TestJumpToPayment />}
         {flow.revealed >= 1 && <CreateAccountScreen index={0} />}
         {flow.revealed >= 2 && <VehicleScreen index={1} />}
         {flow.revealed >= 3 && <CoverageScreen index={2} />}
