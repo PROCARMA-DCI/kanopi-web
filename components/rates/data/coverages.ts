@@ -8,16 +8,16 @@
 
 export const DemoCoverages: planType[] = [
   {
-    plan_id: "powertrain-plus",
-    title: "Powertrain Plus",
-    category: "Service Contract",
-    term: "3 Year or 36,000 Miles",
-    deductible: 500,
-    price: 1205,
+    plan_id: "227190",
+    title: "CCD Platinum",
+    category: "Vehicle Service Contract",
+    term: "4 Years or 75,000 Miles",
+    deductible: 100,
+    price: 1955,
     coverage_id: 3,
     product_id: 1,
     dealer_program_id: 11,
-    reserve_rate_id: 1173,
+    reserve_rate_id: 1642,
   },
   {
     plan_id: "227191",

@@ -111,3 +111,62 @@ If all 12 attempts stay `pending` (timeout, outcome still unknown): show "still 
 1. **Never reuse a `clientSecret` after confirming it once.** Once Stripe returns `requires_capture`/`succeeded`, that PaymentIntent is done — success or failure, it never gets confirmed again. A failed contract save means the card was never actually charged, so retrying is a **whole new flow from step 1**, not a resubmission.
 2. **`contract_status` is the source of truth**, not the client-side Stripe confirm result. The Stripe SDK only tells you the card was authorized — whether the customer actually gets the service depends on whether the contract saved, which only the webhook knows.
 3. Guard against double-tapping "Pay" — don't let a second confirm fire while one is already in flight on the same PaymentIntent.
+
+## Flow of the Stripe payment (who calls what, and when)
+
+The one thing that's easy to get backwards: **your app never calls the webhook.** Stripe calls it,
+on Stripe's own servers, the moment it finishes authorizing the card — completely independent of
+your "Pay" button handler. Your app only *polls* a separate endpoint to find out what the webhook did.
+
+```
+ Customer's device                     Your backend                    Stripe
+ ──────────────────                    ────────────                    ──────
+
+ 1. POST /kanopi/stage        ────────▶  stage contract data
+                               ◀────────  { temp_id }
+
+ 2. GET /stripe/config        ────────▶  fetch publishable key
+                               ◀────────  { publishableKey }
+
+ 3. POST /stripe/               ────────▶  create PaymentIntent  ────────▶  PaymentIntent created
+    create-payment-intent                                        ◀────────  { clientSecret, id }
+                               ◀────────  { clientSecret, paymentIntentId }
+
+ 4. Elements renders card form using clientSecret (no network call yet)
+
+ 5. Customer taps "Pay"
+    stripe.confirmCardPayment(clientSecret, card)  ─────────────────────▶  Stripe authorizes the card
+                                                     ◀─────────────────────  status: "requires_capture"
+    (this call goes straight from the BROWSER to STRIPE — your backend is not involved in this step)
+
+ 6. paymentConfirmed = true                                                Stripe ALSO fires a webhook,
+    pollForResult() starts polling ──┐                                     independently of step 5:
+                                     │                          ─────────▶ POST /stripe/webhook
+                                     │                                     (payment_intent.amount_
+                                     │                                      capturable_updated)
+                                     │                           backend:  find temp_id in metadata,
+                                     │                                     call real saveContract API
+                                     │                                       ├─ success → CAPTURE
+                                     │                                       │   the PaymentIntent
+                                     │                                       │   (card is charged now)
+                                     │                                       └─ failure → CANCEL it
+                                     │                                           (card never charged)
+                                     │                                     store contract_status:
+                                     │                                     "succeeded" or "failed"
+                                     ▼
+ 7. GET /kanopi/payment-status/{temp_id}  ─── every 1.5s, up to ~12x ───▶  read contract_status
+                                        ◀───────────────────────────────  "pending" | "succeeded" | "failed"
+
+ 8. contract_status == "succeeded"  →  flow.next(...) — done
+    contract_status == "failed"    →  show real error, "Try again" = restart from step 1 (new
+                                       temp_id + new PaymentIntent — the old clientSecret is dead)
+    still "pending" after ~18s     →  timeout UI, offer a manual re-poll (NOT a new payment —
+                                       the webhook may still land any second)
+```
+
+**Why this shape, not "save on submit":** if the frontend saved the contract directly right after
+`confirmCardPayment` succeeds, and that save call failed or the tab closed mid-request, the card
+would already be charged with no contract on file — no way to recover automatically. Making the
+webhook the only thing that ever captures the charge means the money and the contract can never
+go out of sync: either both happen (webhook captures after a successful save) or neither does
+(webhook cancels after a failed save).

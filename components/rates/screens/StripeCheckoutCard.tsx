@@ -107,6 +107,7 @@ const StripeCheckoutCard = ({
     ) => {
       setCardState((prev) => ({ ...prev, [field]: event.complete }));
     };
+
   const stripe = useStripe();
   const elements = useElements();
 
@@ -164,6 +165,9 @@ const StripeCheckoutCard = ({
     );
   };
 
+  // pay with Apple Pay / Google Pay (Stripe's ExpressCheckoutElement) — the
+  // flow is the same as a card payment, but the confirm is done through
+  // Stripe's own button instead of our own form submit.
   const handleExpressCheckoutConfirm = async (
     event: StripeExpressCheckoutElementConfirmEvent,
   ) => {
