@@ -36,6 +36,15 @@ interface FlowContextValue {
   resultId: string;
   /** Advance from `index`, merging this screen's `patch` into `data`. */
   next: (index: number, patch?: Record<string, unknown>) => void;
+  /**
+   * Merge `patch` into `data` WITHOUT any navigation side effect — for
+   * screens to call on every field change (live auto-save), so editing a
+   * field on an already-completed screen is reflected immediately, not
+   * only once its Next button is clicked again. `next()` still does the
+   * same merge too (harmless — same fields, same values), since it also
+   * needs to run on the "advance to the next screen" click regardless.
+   */
+  patch: (patch: Record<string, unknown>) => void;
   /** Go back one screen from `index` (or to the entry screen from step 0). */
   back: (index: number) => void;
   /** Back button on the result screen → last step. */
@@ -88,6 +97,10 @@ export function FlowProvider({
       else setFinished(true);
     }
 
+    function patch(patch: Record<string, unknown>) {
+      setData((prev) => ({ ...prev, ...patch }));
+    }
+
     function back(index: number) {
       if (index === 0) scrollTo("rates-entry");
       else scrollTo(stepId(index - 1));
@@ -113,6 +126,7 @@ export function FlowProvider({
       stepId,
       resultId,
       next,
+      patch,
       back,
       resultBack,
       restart,

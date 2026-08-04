@@ -3,7 +3,7 @@
 import { useLayout } from "@/app/providers/LayoutContext";
 import PhoneInput from "@/components/PhoneInput";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFlow } from "../wizard/FlowProvider";
 import { ScreenShell } from "../wizard/ScreenShell";
 
@@ -26,6 +26,16 @@ export function CreateAccountScreen({ index }: { index: number }) {
   ];
   const completion = requirements.filter(Boolean).length / requirements.length;
   const canAdvance = completion === 1;
+
+  // Keep flow.data live as fields change — not just on Next click. Without
+  // this, editing a field here AFTER already clicking Next once (e.g. the
+  // customer scrolls back from Payment to fix something) silently has no
+  // effect unless they click Next again, which read as a bug ("I edited
+  // it but it didn't work").
+  useEffect(() => {
+    flow.patch({ firstName, lastName, email, phone });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [firstName, lastName, email, phone]);
 
   return (
     <ScreenShell

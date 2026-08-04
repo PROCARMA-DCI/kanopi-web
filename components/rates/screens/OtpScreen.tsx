@@ -41,6 +41,7 @@ export function OtpScreen({ index }: { index: number }) {
 
   const handleResend = async () => {
     setResending(true);
+    setOtp("");
     setError("");
     await fetching({
       url: "/api/sendSignupOTP",

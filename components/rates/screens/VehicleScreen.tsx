@@ -66,6 +66,17 @@ export function VehicleScreen({ index, question }: VehicleScreenProps) {
   const completion = filled / 4;
   const canAdvance = completion === 1;
 
+  // Keep flow.data live as fields change — not just on Next click. Without
+  // this, editing a field here AFTER already clicking Next once (e.g. the
+  // customer scrolls back from Payment to fix something) silently has no
+  // effect unless they click Next again, which read as a bug ("I edited
+  // it but it didn't work"). vin defaults the same way onNext does, so a
+  // partial/empty VIN never gets sent as an empty string.
+  useEffect(() => {
+    flow.patch({ vin: vin.trim() || DEFAULT_VIN, make, model, year, mileage });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vin, make, model, year, mileage]);
+
   return (
     <ScreenShell
       id={flow.stepId(index)}

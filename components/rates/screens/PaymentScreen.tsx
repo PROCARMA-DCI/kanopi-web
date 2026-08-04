@@ -15,6 +15,8 @@ import { useFlow } from "../wizard/FlowProvider";
 import { useHeaderDominance } from "../wizard/useHeaderDominance";
 import StripeCheckoutCard from "./StripeCheckoutCard";
 
+const paymentTestMode = true;
+
 // One Stripe.js instance per publishable key for the whole session — Stripe
 // docs explicitly say not to call loadStripe() more than once per key.
 let stripePromiseCache: Promise<Stripe | null> | null = null;
@@ -109,7 +111,7 @@ export function PaymentScreen({ index }: { index: number }) {
         // Stage the contract data first — the PaymentIntent only ever
         // carries a reference (temp_id) to it, never the data itself.
         const stageRes = await fetching<{ temp_id?: string }>({
-          url: "/api/kanopi/stage",
+          url: `/api/kanopi/stage${paymentTestMode ? "?test=true" : ""}`,
           method: "POST",
           body: payload,
         });
@@ -126,7 +128,7 @@ export function PaymentScreen({ index }: { index: number }) {
         }
 
         const configRes = await fetching<{ publishableKey?: string }>({
-          url: "/api/stripe/config",
+          url: `/api/stripe/config${paymentTestMode ? "?test=true" : ""}`,
           method: "GET",
         });
         const publishableKey = configRes.data?.publishableKey;
@@ -141,7 +143,7 @@ export function PaymentScreen({ index }: { index: number }) {
           stripePromiseCache = loadStripe(publishableKey);
 
         const intentRes = await fetching<CreatePaymentIntentResult>({
-          url: "/api/stripe/create-payment-intent",
+          url: `/api/stripe/create-payment-intent${paymentTestMode ? "?test=true" : ""}`,
           method: "POST",
           body: {
             items: [

@@ -103,11 +103,16 @@ export function ResultScreen() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Button type="button" variant="muted" onClick={flow.resultBack}>
+          <div className="w-full flex gap-4 justify-center items-center">
+            {/* <Button type="button" variant="muted" onClick={flow.resultBack}>
               Back
-            </Button>
-            <Button type="button" variant="primary" onClick={flow.restart}>
+            </Button> */}
+            <Button
+              type="button"
+              className="max-w-[300px] w-full"
+              variant="primary"
+              onClick={flow.restart}
+            >
               Start over
             </Button>
           </div>

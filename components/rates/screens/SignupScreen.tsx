@@ -3,7 +3,7 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { SelectField } from "@/components/ui/select-field";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { states } from "../data/vehicle";
 import { SignaturePad } from "../SignaturePad";
 import { useFlow } from "../wizard/FlowProvider";
@@ -42,6 +42,38 @@ export function SignupScreen({ index }: { index: number }) {
   ];
   const completion = requirements.filter(Boolean).length / requirements.length;
   const canAdvance = completion === 1;
+
+  // Keep flow.data live as fields change — not just on Next click. Without
+  // this, editing a field here AFTER already clicking Next once (e.g. the
+  // customer scrolls back from Payment to fix a wrong zip) silently has no
+  // effect unless they click Next again, which read as a bug ("I edited
+  // it but it didn't work").
+  useEffect(() => {
+    flow.patch({
+      streetAddress,
+      apt,
+      zip,
+      city,
+      state,
+      password,
+      agreeVsc,
+      agreeSms,
+      agreeEmail,
+      signature,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    streetAddress,
+    apt,
+    zip,
+    city,
+    state,
+    password,
+    agreeVsc,
+    agreeSms,
+    agreeEmail,
+    signature,
+  ]);
 
   return (
     <ScreenShell

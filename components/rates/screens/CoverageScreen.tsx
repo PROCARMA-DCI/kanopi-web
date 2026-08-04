@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { CoverageCard } from "../CoverageCard";
 import { planType } from "../data/coverages";
@@ -67,6 +68,7 @@ export function CoverageScreen({ index }: { index: number }) {
   // and passed it through flow.data — this screen only reads it.
   const coverages = flow.data.coverages as planType[] | undefined;
   const existingPlans = existingPlan as Record<string, unknown>[] | undefined;
+  const existingPlanCount = existingPlans?.length ?? 0;
   const vehicleLabel = [flow.data.make, flow.data.model]
     .filter(Boolean)
     .join(" ");
@@ -75,7 +77,10 @@ export function CoverageScreen({ index }: { index: number }) {
   // this screen (see the plain <div>, no onNext/onBack, further down).
   const handleSelect = (coverage: planType) => {
     setSelectedId(coverage.reserve_rate_id);
-    flow.next(index, { coverageId: coverage.reserve_rate_id, selectedCoverage: coverage });
+    flow.next(index, {
+      coverageId: coverage.reserve_rate_id,
+      selectedCoverage: coverage,
+    });
   };
 
   return (
@@ -97,9 +102,6 @@ export function CoverageScreen({ index }: { index: number }) {
             <h1 className="text-center text-[52px] font-bold text-[#2D3D00]">
               {`Looks like you already have a service plan for your ${vehicleLabel || "vehicle"}.`}
             </h1>
-            <p className="mt-6 text-center text-[24px] font-bold text-[#2d3d00]">
-              {`Would you like to purchase another coverage for your ${vehicleLabel || "vehicle"}?`}
-            </p>
           </>
         ) : (
           <>
@@ -119,7 +121,7 @@ export function CoverageScreen({ index }: { index: number }) {
         {/* Plan(s) already on file — shown above the purchasable list,
               always highlighted, not selectable. */}
         {existingPlans && existingPlans.length > 0 && (
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 gap-4 shadow p-4 rounded-2xl">
             {existingPlans.map((raw, i) => {
               const plan = toDisplayPlan(raw);
               return (
@@ -133,11 +135,18 @@ export function CoverageScreen({ index }: { index: number }) {
             })}
           </div>
         )}
-
+        {existingPlanCount > 0 && (
+          <p className="mt-6 text-center text-[24px] font-bold text-[#2d3d00]">
+            {`Would you like to purchase another coverage for your ${vehicleLabel || "vehicle"}?`}
+          </p>
+        )}
         <div
           role="radiogroup"
           aria-label="Coverage options"
-          className="grid grid-cols-1 gap-4"
+          className={cn(
+            "grid grid-cols-1 gap-4",
+            existingPlanCount > 0 ? "px-10" : "",
+          )}
         >
           {coverages?.map((coverage) => (
             <CoverageCard

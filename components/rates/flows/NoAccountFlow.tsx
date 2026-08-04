@@ -67,15 +67,27 @@ function Screens() {
 
   return (
     <>
-      {/* {JUMP_TO_PAYMENT_FOR_TESTING && <TestJumpToPayment />} */}
-      {flow.revealed >= 1 && <CreateAccountScreen index={0} />}
-      {flow.revealed >= 2 && <VehicleScreen index={1} />}
-      {flow.revealed >= 3 && <CoverageScreen index={2} />}
-      {flow.revealed >= 4 && <ConfirmCoverageScreen index={3} />}
-      {flow.revealed >= 5 && <SignupScreen index={4} />}
-      {flow.revealed >= 6 && <TwoFactorScreen index={5} />}
-      {flow.revealed >= 7 && <OtpScreen index={6} />}
-      {flow.revealed >= 8 && <PaymentScreen index={7} />}
+      {/* Once payment succeeds (flow.finished), every earlier step is frozen —
+          not just re-showing the result. All of them stay mounted (that's how
+          this wizard works — see the flow.revealed checks below), so without
+          this a customer could scroll back up and edit/resubmit a completed
+          purchase. The only way back into an editable form is Restart, which
+          wipes flow.data entirely — never scrolling into these frozen steps. */}
+      <div
+        className={
+          flow.finished ? "pointer-events-none select-none opacity-60" : ""
+        }
+      >
+        {/* {JUMP_TO_PAYMENT_FOR_TESTING && <TestJumpToPayment />} */}
+        {flow.revealed >= 1 && <CreateAccountScreen index={0} />}
+        {flow.revealed >= 2 && <VehicleScreen index={1} />}
+        {flow.revealed >= 3 && <CoverageScreen index={2} />}
+        {flow.revealed >= 4 && <ConfirmCoverageScreen index={3} />}
+        {flow.revealed >= 5 && <SignupScreen index={4} />}
+        {flow.revealed >= 6 && <TwoFactorScreen index={5} />}
+        {flow.revealed >= 7 && <OtpScreen index={6} />}
+        {flow.revealed >= 8 && <PaymentScreen index={7} />}
+      </div>
       {flow.finished && <ResultScreen />}
     </>
   );
