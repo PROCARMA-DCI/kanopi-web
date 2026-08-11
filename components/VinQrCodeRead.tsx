@@ -59,7 +59,8 @@ export default function VinQrCodeRead({
       body: { vin: value },
       badgeLoading: "Vin decoding",
     });
-    const decoded = res.message;
+    const decoded = res.data;
+
     if (!res.ok || !decoded) {
       setVinError(
         "Couldn't decode that VIN — you can still fill in the fields below.",
