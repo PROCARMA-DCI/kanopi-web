@@ -13,6 +13,13 @@ export interface ModelType {
   ModelName: string;
 }
 
+// Shape of one row returned by /api/stateList.
+export interface StateType {
+  StateID: string;
+  StateTitle: string;
+  StateCode: string;
+}
+
 interface initialValues {
   DealerID: number;
   DealerName: string;
@@ -25,6 +32,8 @@ interface LayoutContextValue extends initialValues {
   fetchMakes: () => Promise<void>;
   fetchModelAgainstMake: (make_id: string) => Promise<ModelType[] | undefined>;
   models: ModelType[];
+  states: StateType[];
+  fetchStates: () => Promise<void>;
 }
 
 const LayoutContext = createContext<LayoutContextValue | null>(null);
@@ -42,6 +51,7 @@ const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({
   const [DealerName, setDealerName] = useState("");
   const [makes, setMakes] = useState<MakeType[]>([]);
   const [models, setModels] = useState<ModelType[]>([]);
+  const [states, setStates] = useState<StateType[]>([]);
 
   useEffect(() => {
     // `active` guards against setState after unmount and against React 18/19's
@@ -107,6 +117,21 @@ const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({
     setModels(res.data);
     return res.data;
   };
+  const fetchStates = async () => {
+    // GET — the backend returns this one as a flat { success, message: [...] }
+    // (no "data" key), so fetching() lands the array under `.message`, same
+    // as /api/checkAlreadyPurchasedPlanForEmail elsewhere in this app.
+    const res = await fetching<StateType[]>({
+      url: "/api/stateList",
+      method: "GET",
+    });
+
+    if (!res.ok || !res.message?.length) {
+      console.error("Failed to load states", res.status);
+      return;
+    }
+    setStates(res.message);
+  };
 
   return (
     <LayoutContext.Provider
@@ -118,6 +143,8 @@ const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({
         fetchMakes,
         fetchModelAgainstMake,
         models,
+        states,
+        fetchStates,
       }}
     >
       {children}

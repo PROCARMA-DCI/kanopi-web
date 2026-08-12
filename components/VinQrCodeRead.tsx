@@ -133,9 +133,11 @@ export default function VinQrCodeRead({
           side on their own row — not an icon tucked inside the input. */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-[1fr_172px]">
         <Input
+          name="vin"
           placeholder="Enter VIN #"
           maxLength={17}
           value={vin}
+          autoComplete="on"
           onChange={(e) => setVin(e.target.value.toUpperCase())}
           onBlur={handleVinBlur}
           onKeyDown={(e) => {

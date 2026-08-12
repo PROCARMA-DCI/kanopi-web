@@ -116,13 +116,24 @@ export function CoverageScreen({ index }: { index: number }) {
         )
       }
       canAdvance={canAdvance}
+      // Cards themselves advance (see handleSelect) — no onNext here on
+      // purpose. onBack is added ONLY for the "not found" case (a failed/
+      // denied kanopiPlansList call, e.g. a bad dealer id): without it,
+      // there'd be no cards to click AND no way off this screen at all.
+      onBack={!coverages ? () => flow.back(index) : undefined}
     >
       <div className="flex flex-col gap-8">
+        {!coverages && (
+          <p className="text-center text-[#7d8760]">
+            We couldn&apos;t load coverage options for your vehicle right
+            now. Go back and try again, or double check your vehicle info.
+          </p>
+        )}
         {/* Plan(s) already on file — shown above the purchasable list,
               always highlighted, not selectable. */}
         {existingPlans && existingPlans.length > 0 && (
           <div className="grid grid-cols-1 gap-4 shadow p-4 rounded-2xl">
-            {existingPlans.map((raw, i) => {
+            {existingPlans?.map((raw, i) => {
               const plan = toDisplayPlan(raw);
               return (
                 <CoverageCard

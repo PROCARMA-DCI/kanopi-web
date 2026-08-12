@@ -8,7 +8,8 @@ export interface ContractPayload {
   phone: string;
   zip: string;
   address: string;
-  city: string;
+  state_id: string;
+  city_name: string;
   unit_address?: string;
   dealer_id: number;
   make_id: string;
@@ -40,7 +41,6 @@ export function buildContractPayload(
     phone: (data.phone as string) ?? "",
     zip: (data.zip as string) ?? "",
     address: (data.streetAddress as string) ?? "",
-    city: (data.city as string) ?? "",
     unit_address: (data.apt as string) ?? "",
     dealer_id: dealerId,
     make_id: (data.make as string) ?? "",
@@ -52,5 +52,7 @@ export function buildContractPayload(
     plan_id: selectedCoverage?.plan_id ?? "",
     rate_id: selectedCoverage?.reserve_rate_id ?? 0,
     coverage_price: selectedCoverage?.price ?? 0,
+    state_id: (data.state_id as string) ?? "",
+    city_name: (data.city as string) ?? "",
   };
 }

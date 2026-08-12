@@ -81,9 +81,9 @@ function Screens({ onGoToLogin }: { onGoToLogin: () => void }) {
         {/* {JUMP_TO_PAYMENT_FOR_TESTING && <TestJumpToPayment />} */}
         {flow.revealed >= 1 && <CreateAccountScreen index={0} />}
         {flow.revealed >= 2 && <VehicleScreen index={1} />}
-        {flow.revealed >= 3 && <CoverageScreen index={2} />}
-        {flow.revealed >= 4 && <ConfirmCoverageScreen index={3} />}
-        {flow.revealed >= 5 && <SignupScreen index={4} />}
+        {flow.revealed >= 3 && <SignupScreen index={2} />}
+        {flow.revealed >= 4 && <CoverageScreen index={3} />}
+        {flow.revealed >= 5 && <ConfirmCoverageScreen index={4} />}
         {flow.revealed >= 6 && <TwoFactorScreen index={5} />}
         {flow.revealed >= 7 && <OtpScreen index={6} />}
         {flow.revealed >= 8 && <PaymentScreen index={7} />}
