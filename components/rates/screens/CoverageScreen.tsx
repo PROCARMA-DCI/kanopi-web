@@ -1,8 +1,10 @@
 "use client";
 
+import { fetching } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { CoverageCard } from "../CoverageCard";
+import { CoverageInfoModal } from "../CoverageInfoModal";
 import { planType } from "../data/coverages";
 import { useFlow } from "../wizard/FlowProvider";
 import { ScreenShell } from "../wizard/ScreenShell";
@@ -82,6 +84,42 @@ export function CoverageScreen({ index }: { index: number }) {
       selectedCoverage: coverage,
     });
   };
+  const [infoOpen, setInfoOpen] = useState(false);
+  const [infoLoading, setInfoLoading] = useState(false);
+  const [infoError, setInfoError] = useState("");
+  const [infoTitle, setInfoTitle] = useState("");
+  const [infoHtml, setInfoHtml] = useState("");
+
+  // Opens the modal right away (loading state) so the click feels
+  // immediate, then fills it in once getKanopiCoverageInfo responds.
+  const onGetCoverageInfo = async (coverage: planType) => {
+    setInfoOpen(true);
+    setInfoLoading(true);
+    setInfoError("");
+    setInfoTitle(coverage.title);
+    setInfoHtml("");
+
+    const res = await fetching<{
+      PlanID?: string;
+      PlanDescription?: string;
+      type?: string;
+      description?: string;
+    }>({
+      url: "/api/getKanopiCoverageInfo",
+      method: "POST",
+      isFormdata: true,
+      body: { planid: coverage.plan_id },
+    });
+
+    setInfoLoading(false);
+    if (!res.ok || !res.data?.description) {
+      setInfoError("Couldn't load coverage details — please try again.");
+      return;
+    }
+
+    setInfoTitle(res.data.PlanDescription || coverage.title);
+    setInfoHtml(res.data.description);
+  };
 
   return (
     <ScreenShell
@@ -125,8 +163,8 @@ export function CoverageScreen({ index }: { index: number }) {
       <div className="flex flex-col gap-8">
         {!coverages && (
           <p className="text-center text-[#7d8760]">
-            We couldn&apos;t load coverage options for your vehicle right
-            now. Go back and try again, or double check your vehicle info.
+            We couldn&apos;t load coverage options for your vehicle right now.
+            Go back and try again, or double check your vehicle info.
           </p>
         )}
         {/* Plan(s) already on file — shown above the purchasable list,
@@ -165,10 +203,20 @@ export function CoverageScreen({ index }: { index: number }) {
               coverage={coverage}
               selected={selectedId === coverage.reserve_rate_id}
               onSelect={() => handleSelect(coverage)}
+              onMoreInfo={onGetCoverageInfo}
             />
           ))}
         </div>
       </div>
+
+      <CoverageInfoModal
+        open={infoOpen}
+        onClose={() => setInfoOpen(false)}
+        title={infoTitle}
+        loading={infoLoading}
+        error={infoError}
+        descriptionHtml={infoHtml}
+      />
     </ScreenShell>
   );
 }
