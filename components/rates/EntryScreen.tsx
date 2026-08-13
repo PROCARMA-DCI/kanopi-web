@@ -1,8 +1,10 @@
 "use client";
 
 import Image from "next/image";
+import { useRef } from "react";
 import { OptionCard } from "./OptionCard";
 import type { RateFlowKey } from "./types";
+import { useHeaderDominance } from "./wizard/useHeaderDominance";
 
 const ENTRY_INTRO = "Hello! I'm Camo. Your customer support chameleon!";
 const ENTRY_QUESTION = "Do you already have a Kanopi account?";
@@ -19,8 +21,19 @@ interface EntryScreenProps {
 
 /** Full-viewport entry screen — "Do you already have a Kanopi account?" */
 export function EntryScreen({ selected, onSelect }: EntryScreenProps) {
+  const rootRef = useRef<HTMLElement>(null);
+  // Every OTHER screen's header is `fixed` at the same viewport spot, with
+  // this hook fading it in/out based on which screen is dominant — that's
+  // what makes the whole flow read as one pinned header instead of each
+  // screen's own header jumping around. This screen used to be the only
+  // one with a `sticky` header and no pt compensation for a fixed one,
+  // which is exactly what caused the visible glitch at this screen's
+  // boundary with whatever comes after it.
+  useHeaderDominance(rootRef);
+
   return (
     <section
+      ref={rootRef}
       id="rates-entry"
       className="relative flex min-h-[100dvh] w-full snap-start snap-always flex-col bg-[#fff9f1]"
     >
@@ -29,7 +42,7 @@ export function EntryScreen({ selected, onSelect }: EntryScreenProps) {
           header/body seam (roughly half overlapping the header, half
           hanging below it into the body), which a header-centered image
           can't do since it'd render almost entirely inside the header. */}
-      <header className="sticky top-0 z-30 flex h-[98px] items-center bg-[#fff9f1] px-10 shadow-[0px_4px_20px_0px_rgba(129,74,0,0.1)]">
+      <header className="fixed inset-x-0 top-0 z-30 flex h-[98px] items-center bg-[#fff9f1] px-10 shadow-[0px_4px_20px_0px_rgba(129,74,0,0.1)] transition-opacity duration-200">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/images/logo.png" alt="Kanopi" className="h-[44px] w-auto" />
       </header>
@@ -41,8 +54,9 @@ export function EntryScreen({ selected, onSelect }: EntryScreenProps) {
         className="absolute left-1/2 top-[47px] z-40 size-[101px] -translate-x-1/2 rounded-full object-cover"
       />
 
-      {/* Centred question + choices */}
-      <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
+      {/* Centred question + choices — pt-40.5 compensates for the header
+          now being `fixed` (out of flow) instead of `sticky` (in flow). */}
+      <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 pt-40.5 text-center">
         <p className="max-w-[941px] text-[20px] text-[rgba(45,61,0,0.5)] sm:text-[32px]">
           {ENTRY_INTRO}
         </p>

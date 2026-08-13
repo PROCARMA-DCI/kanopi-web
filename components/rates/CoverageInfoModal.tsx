@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import gsap from "gsap";
 
 interface CoverageInfoModalProps {
@@ -60,7 +61,15 @@ export function CoverageInfoModal({
 
   if (!open) return null;
 
-  return (
+  // Portal straight to <body> — this screen's ScreenShell sets a live
+  // `filter` (blur) inline style on the content div while scrolling (see
+  // ScreenShell.tsx's updateBlur), and ANY ancestor with an active filter/
+  // transform becomes the containing block for `position: fixed`
+  // descendants. Without the portal, opening this modal while that filter
+  // happens to be non-empty makes it center against that blurred div's
+  // box instead of the real viewport — which is exactly why it sometimes
+  // rendered mispositioned / cut off at the bottom.
+  return createPortal(
     <div
       ref={overlayRef}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
@@ -82,7 +91,7 @@ export function CoverageInfoModal({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="absolute right-6 top-6 flex size-8 items-center justify-center rounded-full bg-[rgba(125,135,96,0.15)] text-[#7d8760] transition-colors hover:bg-[rgba(125,135,96,0.28)]"
+            className="absolute right-6 top-6 flex size-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(125,135,96,0.15)] text-[#7d8760] transition-colors hover:bg-[rgba(125,135,96,0.28)]"
           >
             <svg
               viewBox="0 0 24 24"
@@ -114,6 +123,7 @@ export function CoverageInfoModal({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

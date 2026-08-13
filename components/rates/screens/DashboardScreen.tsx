@@ -40,7 +40,7 @@ export function DashboardScreen() {
     <section
       ref={rootRef}
       id={flow.resultId}
-      className="flex min-h-[100dvh] w-full snap-start flex-col bg-[#fff9f1]"
+      className="flex min-h-[100dvh] w-full snap-start snap-always flex-col bg-[#fff9f1]"
     >
       {/* Header bar */}
       <header className="sticky top-0 z-30 flex h-[98px] items-center bg-[#fff9f1] px-10 shadow-[0px_4px_20px_0px_rgba(129,74,0,0.1)]">
