@@ -285,7 +285,7 @@ const StripeCheckoutCard = ({
                 // Index 4 = SignupScreen ("Your Info") in NoAccountFlow,
                 // where zip/address/etc. are collected — this component
                 // already only makes sense inside that flow.
-                onClick={() => scrollTo(flow.stepId(4))}
+                onClick={() => scrollTo(flow.stepId(0))}
                 className="flex-1 cursor-pointer"
               >
                 Edit my info
