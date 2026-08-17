@@ -60,7 +60,7 @@ export function CoverageCard({
         "shadow-[0px_3px_14px_rgba(129,74,0,0.15)] focus-visible:ring-2 focus-visible:ring-[#a6e00c]",
         isOwned ? "cursor-default" : "cursor-pointer",
         highlighted
-          ? "border-[#a6e00c] shadow-[0px_3px_18px_rgba(166,224,12,0.4)] ring-2 ring-[#a6e00c]"
+          ? "border-[#a6e00c] opacity-80 shadow-[0px_3px_18px_rgba(166,224,12,0.4)] ring-2 ring-[#a6e00c]"
           : "border-[rgba(125,135,96,0.5)] hover:border-[#a6e00c]/60",
       )}
     >

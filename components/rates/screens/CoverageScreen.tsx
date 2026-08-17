@@ -108,7 +108,7 @@ export function CoverageScreen({ index }: { index: number }) {
       url: "/api/getKanopiCoverageInfo",
       method: "POST",
       isFormdata: true,
-      body: { planid: coverage.plan_id },
+      body: { planid: coverage.plan_id, title: coverage.title },
     });
 
     setInfoLoading(false);
