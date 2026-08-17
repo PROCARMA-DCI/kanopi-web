@@ -29,7 +29,7 @@ export function RatesHeader({ title, progress }: RatesHeaderProps) {
         className="pointer-events-none absolute inset-y-0 left-0 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-[#a6e00c]/25 to-transparent opacity-0"
       />
 
-      {/* eslint-disable-next-line @next/next/no-img-element */}
+      {}
       <img src="/images/logo.png" alt="Kanopi" className="h-[44px] w-auto" />
 
       <div className="pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-2">

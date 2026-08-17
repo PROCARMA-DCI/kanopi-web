@@ -80,6 +80,23 @@ const ICONS: Record<string, ReactNode> = {
       <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1" />
     </>
   ),
+  // Policy card decoration (Figma 55:207) — a leaf-on-a-stem, not a vehicle
+  // component, so it lives here rather than being confused for "engine".
+  leaf: (
+    <>
+      <path d="M12 21V8" />
+      <path d="M12 8c0-3.3 2.7-6 6-6 0 3.3-2.7 6-6 6Z" />
+      <path d="M12 13c0-3.3-2.7-6-6-6 0 3.3 2.7 6 6 6Z" />
+    </>
+  ),
+  car: (
+    <>
+      <path d="M4 16V9a1 1 0 0 1 .3-.7l2-2A1 1 0 0 1 7 6h8a1 1 0 0 1 .7.3l2 2a1 1 0 0 1 .3.7v7" />
+      <path d="M3 16h18M6 12h12" />
+      <circle cx="7.5" cy="16" r="1.6" />
+      <circle cx="16.5" cy="16" r="1.6" />
+    </>
+  ),
 };
 
 export function ComponentIcon({
