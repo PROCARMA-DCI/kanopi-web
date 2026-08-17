@@ -42,7 +42,6 @@ export function CreateAccountScreen({ index }: { index: number }) {
       id={flow.stepId(index)}
       index={index}
       total={flow.total}
-      contentClassName="max-w-[767px]"
       completion={completion}
       title="Creating Your Account"
       question="Please provide your phone # and email so I can setup your safe and secure profile."
@@ -53,7 +52,7 @@ export function CreateAccountScreen({ index }: { index: number }) {
       }}
       onBack={() => flow.back(index)}
     >
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 max-w-[684px]  justify-center mx-auto">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 max-w-[684px] justify-center mx-auto">
         <Input
           placeholder="First Name"
           value={firstName}

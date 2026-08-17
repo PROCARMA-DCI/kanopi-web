@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { toast } from "sonner";
 import { fetching } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
 import { maskEmail, maskPhone } from "@/utils/helpers";
+import { useState } from "react";
+import { toast } from "sonner";
 import { useFlow } from "../wizard/FlowProvider";
 import { ScreenShell } from "../wizard/ScreenShell";
 
@@ -23,7 +23,7 @@ function MaskedOption({
   onSelect: () => void;
 }) {
   return (
-    <div className="flex flex-col items-center gap-2">
+    <div className="flex w-full flex-col items-center gap-2">
       <span className="text-[12px] font-bold text-[rgba(45,61,0,0.5)]">
         {label}
       </span>
@@ -33,7 +33,7 @@ function MaskedOption({
         aria-checked={selected}
         onClick={onSelect}
         className={cn(
-          "flex h-[79px] w-[279px] cursor-pointer items-center justify-center rounded-2xl border-[1.5px] px-5 text-[20px] font-bold transition-all duration-200",
+          "flex h-[79px] w-full cursor-pointer items-center justify-center rounded-2xl border-[1.5px] px-5 text-[20px] font-bold transition-all duration-200",
           selected
             ? "border-[#a6e00c] bg-[#fffaf3] text-[#2d3d00] shadow-[0px_2px_10px_rgba(166,224,12,0.3)]"
             : "border-[rgba(125,135,96,0.5)] bg-[#fff9f1] text-[rgba(125,135,96,0.5)] hover:border-[#a6e00c]/60",
@@ -85,7 +85,7 @@ export function TwoFactorScreen({ index }: { index: number }) {
       <div
         role="radiogroup"
         aria-label="Send the verification code via"
-        className="flex flex-wrap items-start justify-center gap-6"
+        className="grid grid-cols-1 items-start gap-6 sm:grid-cols-2"
       >
         <MaskedOption
           label="email"
