@@ -1,3 +1,4 @@
+import { formatDate } from "@/utils/helpers";
 import type { planType } from "./data/coverages";
 
 export interface ContractPayload {
@@ -21,6 +22,7 @@ export interface ContractPayload {
   plan_id: string;
   rate_id: number;
   coverage_price: number;
+  payment_date: string;
 }
 
 /**
@@ -54,5 +56,6 @@ export function buildContractPayload(
     coverage_price: selectedCoverage?.price ?? 0,
     state_id: (data.state_id as string) ?? "",
     city_name: (data.city as string) ?? "",
+    payment_date: formatDate(new Date()),
   };
 }
