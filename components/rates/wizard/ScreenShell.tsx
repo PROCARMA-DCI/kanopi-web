@@ -192,7 +192,7 @@ export function ScreenShell({
 
       <div
         ref={contentRef}
-        className="flex flex-1 flex-col items-center justify-center gap-8 px-6 pb-16 pt-40.5 will-change-[filter]"
+        className="flex flex-1 flex-col items-center justify-center gap-8 px-6 pb-16 pt-24 sm:pt-40.5 will-change-[filter]"
       >
         {/* Wide/full heading area — independent of the content column width. */}
         {heading && (

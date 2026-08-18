@@ -19,7 +19,7 @@ export function GaiaBubble({ question }: { question: string }) {
       />
 
       {/* Question — preserves intentional line breaks from the step config. */}
-      <h3 className="max-w-[763px] whitespace-pre-line text-[20px] font-bold leading-[1.4] text-[#2d3d00]">
+      <h3 className="max-w-[763px] whitespace-pre-line text-[16px] font-bold leading-[1.4] text-[#2d3d00] sm:text-[20px]">
         {question}
       </h3>
     </div>

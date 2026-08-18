@@ -132,18 +132,18 @@ export function CoverageScreen({ index }: { index: number }) {
       // default content width, so the buttons match the cards.
       heading={
         !coverages ? (
-          <h1 className="text-center text-[52px] font-bold text-[#2D3D00]">
+          <h1 className="text-center text-[28px] sm:text-[52px] font-bold text-[#2D3D00]">
             Coverages Not Found
           </h1>
         ) : existingPlans?.length ? (
           <>
-            <h1 className="text-center text-[52px] font-bold text-[#2D3D00]">
+            <h1 className="text-center text-[28px] sm:text-[52px] font-bold text-[#2D3D00]">
               {`Looks like you already have a service plan for your ${vehicleLabel || "vehicle"}.`}
             </h1>
           </>
         ) : (
           <>
-            <h1 className="text-center text-[52px] font-bold text-[#2D3D00]">
+            <h1 className="text-center text-[28px] sm:text-[52px] font-bold text-[#2D3D00]">
               Ok, we found {coverages?.length} coverage options available for
               your vehicle.
             </h1>

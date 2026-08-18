@@ -20,7 +20,7 @@ export function OptionCard({ label, selected, onSelect }: OptionCardProps) {
       aria-checked={selected}
       onClick={onSelect}
       className={cn(
-        "flex h-[79px] w-[239px] cursor-pointer items-center justify-between rounded-2xl border px-5 text-[20px] font-bold transition-all duration-200",
+        "flex h-13 w-full cursor-pointer items-center justify-between rounded-xl border px-4 text-[15px] font-bold transition-all duration-200 sm:h-19.75 sm:w-[239px] sm:rounded-2xl sm:px-5 sm:text-[20px]",
         selected
           ? "border-[#a6e00c] bg-[#fffaf3] text-[#2d3d00] shadow-[0px_2px_10px_rgba(166,224,12,0.3)]"
           : "border-[rgba(125,135,96,0.5)] bg-[#fff9f1] text-[rgba(125,135,96,0.9)] hover:border-[#a6e00c]/60",

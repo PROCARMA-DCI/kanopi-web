@@ -67,7 +67,7 @@ export function PolicyDetailModal({ policy, onClose }: PolicyDetailModalProps) {
       <div
         ref={cardRef}
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-[626px] rounded-[40px] border-[1.5px] border-[#7b8466] bg-[#fff9f5] p-8 shadow-[0px_20px_60px_rgba(129,74,0,0.25)]"
+        className="relative w-full max-w-[626px] rounded-2xl border-[1.5px] border-[#7b8466] bg-[#fff9f5] p-5 shadow-[0px_20px_60px_rgba(129,74,0,0.25)] sm:rounded-[40px] sm:p-8"
       >
         <button
           type="button"
@@ -87,7 +87,7 @@ export function PolicyDetailModal({ policy, onClose }: PolicyDetailModalProps) {
           </svg>
         </button>
 
-        <h3 className="max-w-[80%] text-[25px] font-medium text-[#2d3d00]">
+        <h3 className="max-w-[80%] text-[19px] font-medium text-[#2d3d00] sm:text-[25px]">
           {policy.title}
         </h3>
         <p className="mt-3 text-[19px] text-[#7b8466]">{policy.term}</p>

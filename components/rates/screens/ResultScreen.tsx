@@ -86,17 +86,17 @@ export function ResultScreen({ onGoToLogin }: { onGoToLogin: () => void }) {
         progress={{ total: flow.total, current: flow.total - 1, completion: 1 }}
       />
 
-      <div className="flex flex-1 items-center justify-center px-6 pb-16 pt-40.5">
+      <div className="flex flex-1 items-center justify-center px-6 pb-16 pt-24 sm:pt-40.5">
         <div className="flex w-full max-w-[684px] flex-col gap-8">
           <div className="text-left">
             <GaiaBubble question="All set — here's your personalized estimate." />
           </div>
 
-          <div className="rounded-2xl border border-[#a6e00c] bg-[#fffaf3] p-10 shadow-[0px_2px_10px_rgba(166,224,12,0.3)]">
+          <div className="rounded-2xl border border-[#a6e00c] bg-[#fffaf3] p-6 shadow-[0px_2px_10px_rgba(166,224,12,0.3)] sm:p-10">
             <p className="text-[15px] font-medium uppercase tracking-wide text-[#7d8760]">
               {chosen.title} · your estimated price
             </p>
-            <p className="mt-2 text-[52px] font-bold leading-none text-[#2d3d00]">
+            <p className="mt-2 text-[32px] font-bold leading-none text-[#2d3d00] sm:text-[52px]">
               $<span ref={priceRef}>0</span>
             </p>
             <p className="mt-4 text-[15px] text-[#7d8760]">

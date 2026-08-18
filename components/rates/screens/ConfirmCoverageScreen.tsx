@@ -55,15 +55,15 @@ export function ConfirmCoverageScreen({ index }: { index: number }) {
       title="Your Coverage"
       heading={
         !selectedCoverage ? (
-          <h1 className="text-center text-[52px] font-bold ">
+          <h1 className="text-center text-[28px] font-bold sm:text-[52px]">
             No coverage Selected
           </h1>
         ) : (
           <>
-            <h1 className="text-center text-[52px] font-bold text-[#2D3D00]">
+            <h1 className="text-center text-[28px] font-bold text-[#2D3D00] sm:text-[52px]">
               Nice choice!
             </h1>
-            <p className="mt-2 text-center text-[20px] font-bold text-[#2d3d00]">
+            <p className="mt-2 text-center text-[16px] font-bold text-[#2d3d00] sm:text-[20px]">
               Please read and check the required boxes below.
             </p>
           </>

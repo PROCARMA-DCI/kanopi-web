@@ -11,7 +11,7 @@ import * as React from "react";
  *    solidifies to a filled olive-gray with white text.
  */
 const buttonVariants = cva(
-  "inline-flex items-center justify-center rounded-2xl font-bold text-[20px] leading-none select-none transition-[box-shadow,background-color,color,border-color,transform] duration-200 disabled:pointer-events-none disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a6e00c]/60",
+  "inline-flex items-center justify-center rounded-xl font-bold text-[15px] leading-none select-none transition-[box-shadow,background-color,color,border-color,transform] duration-200 disabled:pointer-events-none disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a6e00c]/60 sm:rounded-2xl sm:text-[20px]",
   {
     variants: {
       variant: {
@@ -21,7 +21,7 @@ const buttonVariants = cva(
           "bg-[rgba(125,135,96,0.1)] text-[rgba(38,51,1,0.5)] border border-[rgba(125,135,96,0.5)] hover:bg-[#7d8760] hover:text-white hover:border-[#7d8760]",
       },
       size: {
-        default: "h-[79px] px-6",
+        default: "h-13 px-4 sm:h-19.75 sm:px-6",
       },
     },
     defaultVariants: { variant: "primary", size: "default" },

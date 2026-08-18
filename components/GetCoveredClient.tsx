@@ -102,7 +102,7 @@ export function GetCoveredClient({
             {/* Card: jeep-leaf + CTA */}
             <div
               data-rise
-              className="w-full max-w-[406px] shrink-0 rounded-[32px] bg-[#fff9f1] px-8 pb-8 pt-4 text-center shadow-[0px_4px_28.5px_rgba(129,74,0,0.2)]"
+              className="w-full max-w-[406px] shrink-0 rounded-2xl bg-[#fff9f1] px-5 pb-5 pt-4 text-center shadow-[0px_4px_28.5px_rgba(129,74,0,0.2)] sm:rounded-[32px] sm:px-8 sm:pb-8"
             >
               <Image
                 data-jeep
@@ -115,7 +115,7 @@ export function GetCoveredClient({
               <button
                 type="button"
                 onClick={handleGetCovered}
-                className="mt-2 h-[79px] cursor-pointer duration-300 transition-all w-full max-w-[298px] rounded-[19px] bg-[#a6e00c] text-[26px] font-black tracking-wide text-[#2d3d00] shadow-[0px_6px_24px_rgba(166,224,12,0.55)] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0px_10px_30px_rgba(166,224,12,0.7)] active:translate-y-0"
+                className="mt-2 h-14 cursor-pointer duration-300 transition-all w-full max-w-[298px] rounded-xl bg-[#a6e00c] text-[18px] font-black tracking-wide text-[#2d3d00] shadow-[0px_6px_24px_rgba(166,224,12,0.55)] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0px_10px_30px_rgba(166,224,12,0.7)] active:translate-y-0 sm:h-[79px] sm:rounded-[19px] sm:text-[26px]"
               >
                 GET COVERED
               </button>

@@ -238,7 +238,7 @@ export function PaymentScreen({ index }: { index: number }) {
       />
 
       {status === "error" && (
-        <div className="flex flex-1 flex-col items-center justify-center gap-6 px-6 pt-40.5 text-center">
+        <div className="flex flex-1 flex-col items-center justify-center gap-6 px-6 pt-24 sm:pt-40.5 text-center">
           <p className="text-[20px] font-bold text-[#2d3d00]">
             We couldn&apos;t start your payment. Please go back and try again.
           </p>
@@ -253,10 +253,10 @@ export function PaymentScreen({ index }: { index: number }) {
       )}
 
       {status === "ready" && stripePromise && (
-        <div className="mx-auto grid w-full max-w-[1200px] flex-1 grid-cols-1 items-center gap-12 px-6 pb-16 pt-40.5 lg:grid-cols-2 lg:divide-x lg:divide-[rgba(125,135,96,0.3)]">
+        <div className="mx-auto grid w-full max-w-[1200px] flex-1 grid-cols-1 items-center gap-6 px-6 pb-16 pt-24 sm:gap-12 sm:pt-40.5 lg:grid-cols-2 lg:divide-x lg:divide-[rgba(125,135,96,0.3)]">
           {/* Left: illustration + headline */}
           <div className="flex flex-col items-start gap-6 lg:pr-12">
-            <h1 className="max-w-[400px] text-[32px] font-bold leading-[1.3] text-[#2d3d00]">
+            <h1 className="max-w-[400px] text-[22px] font-bold leading-[1.3] text-[#2d3d00] sm:text-[32px]">
               You are one step away from defeating the repair monster!{" "}
               <span className="text-[#a6e00c]">
                 Stop overpaying for simple fixes.
@@ -278,12 +278,12 @@ export function PaymentScreen({ index }: { index: number }) {
               scrolled back to manually afterward). */}
           <div className="flex flex-col gap-6 lg:pl-12">
             {flow.finished ? (
-              <p className="text-[28px] font-semibold text-[#2d3d00]">
+              <p className="text-[20px] font-semibold text-[#2d3d00] sm:text-[28px]">
                 Your payment was successful! Your contract has been created.
               </p>
             ) : (
               <>
-                <p className="text-[28px] text-[#7b8466]">
+                <p className="text-[20px] text-[#7b8466] sm:text-[28px]">
                   Enter Card Information
                 </p>
                 <Elements

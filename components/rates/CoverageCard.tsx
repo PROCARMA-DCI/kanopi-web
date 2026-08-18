@@ -56,7 +56,7 @@ export function CoverageCard({
             }
       }
       className={cn(
-        "relative w-full rounded-[36px] border-[1.5px] bg-[#fffaf3] p-6 text-left outline-none transition-all duration-200",
+        "relative w-full rounded-2xl border-[1.5px] bg-[#fffaf3] p-4 text-left outline-none transition-all duration-200 sm:rounded-[36px] sm:p-6",
         "shadow-[0px_3px_14px_rgba(129,74,0,0.15)] focus-visible:ring-2 focus-visible:ring-[#a6e00c]",
         isOwned ? "cursor-default" : "cursor-pointer",
         highlighted
@@ -65,12 +65,14 @@ export function CoverageCard({
       )}
     >
       {/* Top: name + subtitle, gear icon top-right */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-3 sm:gap-4">
         <div>
-          <h4 className="text-[30px] font-bold leading-tight text-[#2d3d00]">
+          <h4 className="text-[19px] font-bold leading-tight text-[#2d3d00] sm:text-[30px]">
             {coverage.title}
           </h4>
-          <p className="text-[19px] text-[#7b8466]">{coverage.category}</p>
+          <p className="text-[14px] text-[#7b8466] sm:text-[19px]">
+            {coverage.category}
+          </p>
         </div>
 
         <Image
@@ -78,12 +80,12 @@ export function CoverageCard({
           width={78}
           height={78}
           alt=""
-          className="shrink-0"
+          className="size-12 shrink-0 sm:size-[78px]"
         />
       </div>
 
       {/* Green highlight line — "owned" cards show an expiry date instead */}
-      <p className="mt-4 text-[30px] font-bold leading-tight text-[#a6e00c]">
+      <p className="mt-4 text-[19px] font-bold leading-tight text-[#a6e00c] sm:text-[30px]">
         {highlightOverride ?? coverage.term}
       </p>
 
@@ -95,23 +97,25 @@ export function CoverageCard({
             e.stopPropagation(); // don't toggle selection
             onMoreInfo?.(coverage);
           }}
-          className="h-[51px] rounded-xl border-2 border-[#a6e00c] bg-[#a6e00c] px-8 text-[15px] font-bold text-[#2d3d00] shadow-[0px_3px_12px_rgba(166,224,12,0.6)] transition-opacity hover:opacity-90"
+          className="h-11 cursor-pointer rounded-xl border-2 border-[#a6e00c] bg-[#a6e00c] px-5 text-[13px] font-bold text-[#2d3d00] shadow-[0px_3px_12px_rgba(166,224,12,0.6)] transition-opacity hover:opacity-90 sm:h-[51px] sm:px-8 sm:text-[15px]"
         >
           See what&apos;s covered
         </button>
 
-        <div className="flex items-center gap-10">
+        <div className="flex items-center gap-5 sm:gap-10">
           <div className="flex flex-col">
-            <span className="text-[19px] text-[#7b8466]">Deductible</span>
-            <span className="text-[22px] font-bold text-[#2d3d00]">
+            <span className="text-[14px] text-[#7b8466] sm:text-[19px]">
+              Deductible
+            </span>
+            <span className="text-[16px] font-bold text-[#2d3d00] sm:text-[22px]">
               Your Price
             </span>
           </div>
           <div className="flex flex-col text-right">
-            <span className="text-[19px] text-[#7b8466]">
+            <span className="text-[14px] text-[#7b8466] sm:text-[19px]">
               {usd(coverage.deductible)}
             </span>
-            <span className="text-[22px] font-bold text-[#2d3d00]">
+            <span className="text-[16px] font-bold text-[#2d3d00] sm:text-[22px]">
               {usd(coverage.price)}
             </span>
           </div>

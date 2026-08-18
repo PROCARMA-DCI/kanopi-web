@@ -128,7 +128,7 @@ export default function VinQrCodeRead({
   }, [scannerOpen]);
 
   return (
-    <div className="relative col-span-2">
+    <div className="relative sm:col-span-2">
       {/* Figma: VIN input + a separate labeled "Scan VIN" button side by
           side on their own row — not an icon tucked inside the input. */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-[1fr_172px]">
@@ -154,7 +154,7 @@ export default function VinQrCodeRead({
             setVinError("");
             setScannerOpen(true);
           }}
-          className="flex h-[79px] cursor-pointer items-center justify-between rounded-2xl border-[1.5px] border-[rgba(125,135,96,0.5)] bg-[#bec0a9] px-5 text-[20px] font-bold text-white transition-colors hover:bg-[#aeb096]"
+          className="flex h-13 cursor-pointer items-center justify-between rounded-xl border-[1.5px] border-[rgba(125,135,96,0.5)] bg-[#bec0a9] px-4 text-[15px] font-bold text-white transition-colors hover:bg-[#aeb096] sm:h-19.75 sm:rounded-2xl sm:px-5 sm:text-[20px]"
         >
           Scan VIN
           {/* Scan / barcode icon (inline SVG — no icon package installed) */}

@@ -68,7 +68,7 @@ export function DashboardScreen() {
     >
       <RatesHeader title="" />
 
-      <div className="mx-auto w-full max-w-6xl flex-1 px-6 pb-12 pt-40.5">
+      <div className="mx-auto w-full max-w-6xl flex-1 px-6 pb-12 pt-24 sm:pt-40.5">
         {/* Profile — fully visible, in normal flow below the fixed header
             (no straddling/clipping — that's an EntryScreen-mascot-specific
             trick, wrong fit for an actual profile photo). From kanopiLogin's
@@ -81,14 +81,14 @@ export function DashboardScreen() {
             <img
               src={loginData.MainScreenProfile}
               alt=""
-              className="size-[96px] rounded-full border-2 border-[#a6e00c] object-cover"
+              className="size-16 rounded-full border-2 border-[#a6e00c] object-cover sm:size-[96px]"
             />
           ) : (
-            <span className="flex size-[96px] items-center justify-center rounded-full border-2 border-[#a6e00c] bg-gradient-to-br from-[#e9f4cf] to-[#c8ff3e] text-[38px] font-bold text-[#2d3d00]">
+            <span className="flex size-16 items-center justify-center rounded-full border-2 border-[#a6e00c] bg-gradient-to-br from-[#e9f4cf] to-[#c8ff3e] text-[24px] font-bold text-[#2d3d00] sm:size-[96px] sm:text-[38px]">
               {fullName.charAt(0).toUpperCase() || "?"}
             </span>
           )}
-          <h1 className="text-[25px] font-medium text-[#2d3d00]">
+          <h1 className="text-[18px] font-medium text-[#2d3d00] sm:text-[25px]">
             {fullName || "—"}
           </h1>
         </div>
@@ -114,16 +114,18 @@ export function DashboardScreen() {
                   zIndex: i + 1,
                   marginTop: i === 0 ? 0 : -140,
                 }}
-                className="relative block h-[292px] w-full cursor-pointer rounded-[40px] border-[1.5px] border-[#7b8466] bg-[#fff9f5] p-8 text-left shadow-[0px_4px_22px_rgba(129,74,0,0.15)] transition-shadow hover:shadow-[0px_6px_26px_rgba(129,74,0,0.22)]"
+                className="relative block h-[220px] w-full cursor-pointer rounded-2xl border-[1.5px] border-[#7b8466] bg-[#fff9f5] p-5 text-left shadow-[0px_4px_22px_rgba(129,74,0,0.15)] transition-shadow hover:shadow-[0px_6px_26px_rgba(129,74,0,0.22)] sm:h-[292px] sm:rounded-[40px] sm:p-8"
               >
-                <h3 className="max-w-[70%] text-[25px] font-medium text-[#2d3d00]">
+                <h3 className="max-w-[70%] text-[18px] font-medium text-[#2d3d00] sm:text-[25px]">
                   {policy.title}
                 </h3>
-                <p className="mt-3 text-[19px] text-[#7b8466]">{policy.term}</p>
-                <p className="mt-4 text-[19px] font-medium text-[#7d8760]">
+                <p className="mt-3 text-[14px] text-[#7b8466] sm:text-[19px]">
+                  {policy.term}
+                </p>
+                <p className="mt-4 text-[14px] font-medium text-[#7d8760] sm:text-[19px]">
                   Price:
                 </p>
-                <p className="text-[19px] text-[#7d8760] opacity-75">
+                <p className="text-[14px] text-[#7d8760] opacity-75 sm:text-[19px]">
                   ${policy.price.toLocaleString("en-US")}
                 </p>
 
@@ -140,11 +142,11 @@ export function DashboardScreen() {
           {/* Right: coverage summary + tiles + button */}
           <div data-rise className="flex flex-col gap-5">
             {/* Summary */}
-            <div className="relative rounded-[32px] border-[1.5px] border-[#7b8466] bg-[#fff9f5] p-7">
-              <p className="text-[20px] font-medium text-[#2d3d00]">
+            <div className="relative rounded-2xl border-[1.5px] border-[#7b8466] bg-[#fff9f5] p-5 sm:rounded-[32px] sm:p-7">
+              <p className="text-[16px] font-medium text-[#2d3d00] sm:text-[20px]">
                 {ACCOUNT.planName}
               </p>
-              <div className="mt-4 flex  gap-10 text-[15px] text-[#7b8466]">
+              <div className="mt-4 flex gap-5 text-[13px] text-[#7b8466] sm:gap-10 sm:text-[15px]">
                 <div>
                   <p>{ACCOUNT.contract}</p>
                   <p className="opacity-75">{ACCOUNT.planDates}</p>
@@ -154,19 +156,19 @@ export function DashboardScreen() {
                   <p className="opacity-75">${ACCOUNT.deductible}</p>
                 </div>
               </div>
-              <div className="absolute right-7 top-7 size-12">
+              <div className="absolute right-5 top-5 size-9 sm:right-7 sm:top-7 sm:size-12">
                 <img src={"images/vector.png"} alt="" className="" />
               </div>
             </div>
 
             {/* Component tiles */}
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-4 gap-2 sm:gap-3">
               {SUMMARY_COMPONENTS.map((c) => (
                 <div key={c.key} className="flex flex-col items-center gap-2">
-                  <div className="flex aspect-square w-full items-center justify-center rounded-[24px] border-[1.5px] border-[#7b8466] bg-[#fff9f5] p-4 text-[#a6e00c] shadow-[0px_3px_12px_rgba(129,74,0,0.1)]">
+                  <div className="flex aspect-square w-full items-center justify-center rounded-xl border-[1.5px] border-[#7b8466] bg-[#fff9f5] p-2 text-[#a6e00c] shadow-[0px_3px_12px_rgba(129,74,0,0.1)] sm:rounded-[24px] sm:p-4">
                     <ComponentIcon name={c.key} />
                   </div>
-                  <span className="text-[13px] text-[#2d3d00] opacity-75">
+                  <span className="text-[11px] text-[#2d3d00] opacity-75 sm:text-[13px]">
                     {c.label}
                   </span>
                 </div>
@@ -177,7 +179,7 @@ export function DashboardScreen() {
             <button
               type="button"
               onClick={() => setModalOpen(true)}
-              className="h-[79px] cursor-pointer rounded-2xl border-[1.5px] border-[#a6e00c] bg-[#fff9f3] text-[20px] font-bold text-[rgba(45,61,0,0.78)] shadow-[0px_4px_10px_rgba(129,74,0,0.1)] transition-shadow hover:shadow-[0px_6px_16px_rgba(166,224,12,0.35)]"
+              className="h-13 cursor-pointer rounded-xl border-[1.5px] border-[#a6e00c] bg-[#fff9f3] text-[15px] font-bold text-[rgba(45,61,0,0.78)] shadow-[0px_4px_10px_rgba(129,74,0,0.1)] transition-shadow hover:shadow-[0px_6px_16px_rgba(166,224,12,0.35)] sm:h-19.75 sm:rounded-2xl sm:text-[20px]"
             >
               See all covered components
             </button>

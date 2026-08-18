@@ -21,7 +21,7 @@ interface RatesHeaderProps {
  */
 export function RatesHeader({ title, progress }: RatesHeaderProps) {
   return (
-    <header className="fixed inset-x-0 top-0 z-30 flex h-[98px] items-center overflow-hidden bg-[#fff9f1] px-10 shadow-[0px_4px_20px_0px_rgba(129,74,0,0.1)] transition-[opacity,filter] duration-200">
+    <header className="fixed inset-x-0 top-0 z-30 flex h-[72px] items-center overflow-hidden bg-[#fff9f1] px-4 shadow-[0px_4px_20px_0px_rgba(129,74,0,0.1)] transition-[opacity,filter] duration-200 sm:h-[98px] sm:px-10">
       {/* Left→right shine sweep (animated by ScreenShell on screen entry). */}
       <span
         aria-hidden
@@ -30,10 +30,14 @@ export function RatesHeader({ title, progress }: RatesHeaderProps) {
       />
 
       {}
-      <img src="/images/logo.png" alt="Kanopi" className="h-[44px] w-auto" />
+      <img
+        src="/images/logo.png"
+        alt="Kanopi"
+        className="h-[30px] w-auto sm:h-[44px]"
+      />
 
-      <div className="pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-2">
-        <span className="text-[20px] font-bold leading-none text-[#2d3d00]">
+      <div className="pointer-events-none absolute left-1/2 top-1/2 flex max-w-[60%] -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 sm:max-w-none sm:gap-2">
+        <span className="truncate text-[13px] font-bold leading-none text-[#2d3d00] sm:text-[20px]">
           {title}
         </span>
         {progress && (

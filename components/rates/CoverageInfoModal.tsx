@@ -81,10 +81,10 @@ export function CoverageInfoModal({
       <div
         ref={cardRef}
         onClick={(e) => e.stopPropagation()}
-        className="relative flex max-h-[80vh] w-full max-w-2xl flex-col rounded-[36px] border-[1.5px] border-[#a6e00c]/40 bg-[#fff9f5] p-8 shadow-[0px_20px_60px_rgba(129,74,0,0.25)]"
+        className="relative flex max-h-[80vh] w-full max-w-2xl flex-col rounded-2xl border-[1.5px] border-[#a6e00c]/40 bg-[#fff9f5] p-4 shadow-[0px_20px_60px_rgba(129,74,0,0.25)] sm:rounded-[36px] sm:p-8"
       >
         <div className="mb-6 flex items-center justify-center">
-          <h2 className="text-center text-[26px] font-bold text-[#2d3d00]">
+          <h2 className="text-center text-[20px] font-bold text-[#2d3d00] sm:text-[26px]">
             {title || "Coverage details"}
           </h2>
           <button

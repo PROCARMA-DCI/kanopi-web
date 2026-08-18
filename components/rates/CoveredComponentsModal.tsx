@@ -74,11 +74,13 @@ export function CoveredComponentsModal({
       <div
         ref={cardRef}
         onClick={(e) => e.stopPropagation()}
-        className="relative flex max-h-[80vh] w-full max-w-4xl flex-col rounded-[36px] border-[1.5px] border-[#a6e00c]/40 bg-[#fff9f5] p-8 shadow-[0px_20px_60px_rgba(129,74,0,0.25)]"
+        className="relative flex max-h-[80vh] w-full max-w-4xl flex-col rounded-2xl border-[1.5px] border-[#a6e00c]/40 bg-[#fff9f5] p-4 shadow-[0px_20px_60px_rgba(129,74,0,0.25)] sm:rounded-[36px] sm:p-8"
       >
         {/* Header */}
         <div className="mb-6 flex items-center justify-center">
-          <h2 className="text-[28px] font-bold text-[#2d3d00]">{planName}</h2>
+          <h2 className="text-[20px] font-bold text-[#2d3d00] sm:text-[28px]">
+            {planName}
+          </h2>
           <button
             type="button"
             onClick={onClose}
@@ -99,10 +101,12 @@ export function CoveredComponentsModal({
         >
           {COVERED_COMPONENTS.map((c, i) => (
             <div key={`${c.key}-${i}`} className="flex flex-col items-center gap-2">
-              <div className="flex aspect-square w-full items-center justify-center rounded-[22px] border-[1.5px] border-[#a6e00c] bg-[#fff9f5] p-6 text-[#a6e00c] shadow-[0px_3px_12px_rgba(129,74,0,0.08)]">
+              <div className="flex aspect-square w-full items-center justify-center rounded-2xl border-[1.5px] border-[#a6e00c] bg-[#fff9f5] p-3 text-[#a6e00c] shadow-[0px_3px_12px_rgba(129,74,0,0.08)] sm:rounded-[22px] sm:p-6">
                 <ComponentIcon name={c.key} />
               </div>
-              <span className="text-[14px] text-[#2d3d00]">{c.label}</span>
+              <span className="text-[12px] text-[#2d3d00] sm:text-[14px]">
+                {c.label}
+              </span>
             </div>
           ))}
         </div>

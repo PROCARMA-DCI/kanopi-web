@@ -73,7 +73,7 @@ export function OtpScreen({ index }: { index: number }) {
       question="Almost there — let's verify your account."
       canAdvance={canAdvance}
     >
-      <div className="mx-auto flex w-full max-w-full flex-col items-center gap-6 rounded-[36px] border-[1.5px] border-[rgba(125,135,96,0.5)] px-8 py-8">
+      <div className="mx-auto flex w-full max-w-full flex-col items-center gap-4 rounded-2xl border-[1.5px] border-[rgba(125,135,96,0.5)] px-4 py-6 sm:gap-6 sm:rounded-[36px] sm:px-8 sm:py-8">
         <p className="text-center text-[16px] text-[#7d8760]">
           We just sent a {OTP_LENGTH}-digit code to {destination ?? "you"},
           enter it below:

@@ -54,9 +54,9 @@ export function EntryScreen({ selected, onSelect }: EntryScreenProps) {
         className="absolute left-1/2 top-[47px] z-40 size-[101px] -translate-x-1/2 rounded-full object-cover"
       />
 
-      {/* Centred question + choices — pt-40.5 compensates for the header
+      {/* Centred question + choices — pt-24 sm:pt-40.5 compensates for the header
           now being `fixed` (out of flow) instead of `sticky` (in flow). */}
-      <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 pt-40.5 text-center">
+      <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 pt-24 sm:pt-40.5 text-center">
         <p className="max-w-[941px] text-[20px] text-[rgba(45,61,0,0.5)] sm:text-[32px]">
           {ENTRY_INTRO}
         </p>
