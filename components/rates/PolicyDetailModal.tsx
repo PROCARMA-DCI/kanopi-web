@@ -1,9 +1,8 @@
 "use client";
 
+import gsap from "gsap";
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import gsap from "gsap";
-import { ComponentIcon } from "./ComponentIcon";
 import type { PurchasedPlan } from "./screens/LoginScreen";
 
 interface PolicyDetailModalProps {
@@ -58,7 +57,7 @@ export function PolicyDetailModal({ policy, onClose }: PolicyDetailModalProps) {
   return createPortal(
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 "
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -67,13 +66,13 @@ export function PolicyDetailModal({ policy, onClose }: PolicyDetailModalProps) {
       <div
         ref={cardRef}
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-[626px] rounded-2xl border-[1.5px] border-[#7b8466] bg-[#fff9f5] p-5 shadow-[0px_20px_60px_rgba(129,74,0,0.25)] sm:rounded-[40px] sm:p-8"
+        className="relative  w-full max-w-[626px] rounded-2xl border-[1.5px]  border-[#7b8466] bg-[#fff9f5] p-5 shadow-[0px_20px_60px_rgba(129,74,0,0.25)] sm:rounded-[40px] sm:p-8"
       >
         <button
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="absolute right-6 top-6 flex size-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(125,135,96,0.15)] text-[#7d8760] transition-colors hover:bg-[rgba(125,135,96,0.28)]"
+          className="absolute right-6 top-2 flex size-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(125,135,96,0.15)] text-[#7d8760] transition-colors hover:bg-[rgba(125,135,96,0.28)]"
         >
           <svg
             viewBox="0 0 24 24"
@@ -96,11 +95,11 @@ export function PolicyDetailModal({ policy, onClose }: PolicyDetailModalProps) {
           ${policy.price.toLocaleString("en-US")}
         </p>
 
-        <div className="pointer-events-none absolute right-8 top-8 size-16 text-[#a6e00c]">
-          <ComponentIcon name="leaf" />
+        <div className="pointer-events-none absolute right-6 top-6 size-16 text-[#a6e00c]">
+          <img src={"images/Group3018.png"} alt="" className="" />
         </div>
-        <div className="pointer-events-none absolute bottom-6 right-8 h-16 w-28 text-[#c8b58a]">
-          <ComponentIcon name="car" />
+        <div className="pointer-events-none absolute bottom-4 right-6 h-16 w-28 text-[#c8b58a]">
+          <img src={"images/Group3012.png"} alt="" className="" />
         </div>
       </div>
     </div>,
