@@ -1,11 +1,11 @@
 "use client";
 
+import { Input } from "@/components/ui/input";
+import { fetching } from "@/lib/api/client";
 import { useState } from "react";
 import { toast } from "sonner";
-import { fetching } from "@/lib/api/client";
-import { Input } from "@/components/ui/input";
-import { ScreenShell } from "../wizard/ScreenShell";
 import { useFlow } from "../wizard/FlowProvider";
+import { ScreenShell } from "../wizard/ScreenShell";
 
 // Real shape of POST /kanopiLogin's success response — drives
 // DashboardScreen's theming/profile/coverage cards directly, no demo data.
@@ -34,7 +34,17 @@ export interface PurchasedPlan {
   plan_id: string;
   title: string;
   term: string;
+  year: string;
+  make: string;
+  model: string;
+  duration: string;
   price: number;
+  purchase_date: string;
+  image: string;
+}
+export interface dashboard {
+  CustomerInfo: KanopiCustomerInfo;
+  Plans: PurchasedPlan[];
 }
 
 export interface KanopiLoginData {
@@ -111,16 +121,15 @@ export function LoginScreen({ index }: { index: number }) {
         // elsewhere in this app.
         const loginData = loginRes.message as KanopiLoginData;
 
-        const plansRes = await fetching<PurchasedPlan[]>({
-          url: "/api/checkAlreadyPurchasedPlanForEmail",
+        const plansRes = await fetching<dashboard>({
+          url: "/api/kanopiDashboard",
           method: "POST",
           isFormdata: true,
           body: { email },
           badgeLoading: "Loading your plans",
         });
-        const purchasedPlans = Array.isArray(plansRes.message)
-          ? plansRes.message
-          : [];
+        const plans = plansRes.message?.Plans;
+        const purchasedPlans = Array.isArray(plans) ? plans : [];
 
         flow.next(index, {
           email,

@@ -95,11 +95,11 @@ export function PolicyDetailModal({ policy, onClose }: PolicyDetailModalProps) {
           ${policy.price.toLocaleString("en-US")}
         </p>
 
-        <div className="pointer-events-none absolute right-6 top-6 size-16 text-[#a6e00c]">
+        {/* <div className="pointer-events-none absolute right-6 top-6 size-16 text-[#a6e00c]">
           <img src={"images/Group3018.png"} alt="" className="" />
-        </div>
-        <div className="pointer-events-none absolute bottom-4 right-6 h-16 w-28 text-[#c8b58a]">
-          <img src={"images/Group3012.png"} alt="" className="" />
+        </div> */}
+        <div className="pointer-events-none absolute bottom-20 right-6 h-16 w-28 text-[#c8b58a]">
+          <img src={policy?.image} alt="" className="" />
         </div>
       </div>
     </div>,
