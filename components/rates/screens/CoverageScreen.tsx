@@ -1,11 +1,11 @@
 "use client";
 
-import { fetching } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { CoverageCard } from "../CoverageCard";
 import { CoverageInfoModal } from "../CoverageInfoModal";
 import { planType } from "../data/coverages";
+import { useCoverageInfoModal } from "../useCoverageInfoModal";
 import { useFlow } from "../wizard/FlowProvider";
 import { ScreenShell } from "../wizard/ScreenShell";
 
@@ -84,42 +84,15 @@ export function CoverageScreen({ index }: { index: number }) {
       selectedCoverage: coverage,
     });
   };
-  const [infoOpen, setInfoOpen] = useState(false);
-  const [infoLoading, setInfoLoading] = useState(false);
-  const [infoError, setInfoError] = useState("");
-  const [infoTitle, setInfoTitle] = useState("");
-  const [infoHtml, setInfoHtml] = useState("");
-
-  // Opens the modal right away (loading state) so the click feels
-  // immediate, then fills it in once getKanopiCoverageInfo responds.
-  const onGetCoverageInfo = async (coverage: planType) => {
-    setInfoOpen(true);
-    setInfoLoading(true);
-    setInfoError("");
-    setInfoTitle(coverage.title);
-    setInfoHtml("");
-
-    const res = await fetching<{
-      PlanID?: string;
-      PlanDescription?: string;
-      type?: string;
-      description?: string;
-    }>({
-      url: "/api/getKanopiCoverageInfo",
-      method: "POST",
-      isFormdata: true,
-      body: { planid: coverage.plan_id, title: coverage.title },
-    });
-
-    setInfoLoading(false);
-    if (!res.ok || !res.data?.description) {
-      setInfoError("Couldn't load coverage details — please try again.");
-      return;
-    }
-
-    setInfoTitle(res.data.PlanDescription || coverage.title);
-    setInfoHtml(res.data.description);
-  };
+  const {
+    infoOpen,
+    infoLoading,
+    infoError,
+    infoTitle,
+    infoHtml,
+    openCoverageInfo,
+    closeCoverageInfo,
+  } = useCoverageInfoModal();
 
   return (
     <ScreenShell
@@ -203,7 +176,7 @@ export function CoverageScreen({ index }: { index: number }) {
               coverage={coverage}
               selected={selectedId === coverage.reserve_rate_id}
               onSelect={() => handleSelect(coverage)}
-              onMoreInfo={onGetCoverageInfo}
+              onMoreInfo={openCoverageInfo}
             />
           ))}
         </div>
@@ -211,7 +184,7 @@ export function CoverageScreen({ index }: { index: number }) {
 
       <CoverageInfoModal
         open={infoOpen}
-        onClose={() => setInfoOpen(false)}
+        onClose={closeCoverageInfo}
         title={infoTitle}
         loading={infoLoading}
         error={infoError}

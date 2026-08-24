@@ -8,20 +8,24 @@ import type { PurchasedPlan } from "./screens/LoginScreen";
 interface PolicyDetailModalProps {
   policy: PurchasedPlan | null;
   onClose: () => void;
+  openCoverageInfo: (coverage: PurchasedPlan) => void;
 }
 
 /**
- * Full plan details (Figma 55:207's "front" card) in a modal, for the
+ * Full plan details (Figma 745:414's "front" card) in a modal, for the
  * stacked cards on DashboardScreen that only show a peek of their title
- * otherwise. Uses the real checkAlreadyPurchasedPlanForEmail shape
- * (plan_id/title/term/price) — no vehicle name or policy number field
- * exists in that data, so this doesn't show either.
+ * otherwise. Mirrors that card's fields exactly: title, year/make/model,
+ * term, duration, price, and the real vehicle image.
  *
  * Portal to <body>, same reasoning as CoverageInfoModal: nothing here sets
  * a live `filter`, but this keeps the pattern consistent and future-proof
  * if DashboardScreen ever grows scroll-driven effects like ScreenShell's.
  */
-export function PolicyDetailModal({ policy, onClose }: PolicyDetailModalProps) {
+export function PolicyDetailModal({
+  policy,
+  onClose,
+  openCoverageInfo,
+}: PolicyDetailModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -66,7 +70,7 @@ export function PolicyDetailModal({ policy, onClose }: PolicyDetailModalProps) {
       <div
         ref={cardRef}
         onClick={(e) => e.stopPropagation()}
-        className="relative  w-full max-w-[626px] rounded-2xl border-[1.5px]  border-[#7b8466] bg-[#fff9f5] p-5 shadow-[0px_20px_60px_rgba(129,74,0,0.25)] sm:rounded-[40px] sm:p-8"
+        className="relative  block h-[340px] w-full max-w-[626px] rounded-2xl border-[1.5px]  border-[#7b8466] bg-[#fff9f5] p-5 shadow-[0px_20px_60px_rgba(129,74,0,0.25)] sm:rounded-[40px] sm:p-8"
       >
         <button
           type="button"
@@ -86,20 +90,50 @@ export function PolicyDetailModal({ policy, onClose }: PolicyDetailModalProps) {
           </svg>
         </button>
 
-        <h3 className="max-w-[80%] text-[19px] font-medium text-[#2d3d00] sm:text-[25px]">
+        <h3 className="max-w-[65%] text-[18px] font-medium text-[#2d3d00] sm:text-[25px]">
           {policy.title}
         </h3>
-        <p className="mt-3 text-[19px] text-[#7b8466]">{policy.term}</p>
-        <p className="mt-4 text-[19px] font-medium text-[#7d8760]">Price:</p>
-        <p className="text-[19px] text-[#7d8760] opacity-75">
+        <p className="mt-2 max-w-[65%] text-[14px] font-medium text-[#2d3d00] sm:text-[19px]">
+          {[policy.year, policy.make, policy.model].filter(Boolean).join(" ")}
+        </p>
+        <p className="mt-1 max-w-[65%] text-[13px] text-[#7b8466] sm:text-[17px]">
+          {policy.term}
+        </p>
+        <p className="mt-1 max-w-[65%] text-[13px] text-[#7b8466] opacity-75 sm:text-[17px]">
+          {policy.duration}
+        </p>
+        <p className="mt-3 text-[14px] font-medium text-[#7d8760] sm:text-[19px]">
+          Price:
+        </p>
+        <p className="text-[14px] text-[#7d8760] opacity-75 sm:text-[19px]">
           ${policy.price.toLocaleString("en-US")}
         </p>
-
-        {/* <div className="pointer-events-none absolute right-6 top-6 size-16 text-[#a6e00c]">
-          <img src={"images/Group3018.png"} alt="" className="" />
-        </div> */}
-        <div className="pointer-events-none absolute bottom-20 right-6 h-16 w-28 text-[#c8b58a]">
-          <img src={policy?.image} alt="" className="" />
+        {policy.image && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={policy.image}
+            alt=""
+            className="pointer-events-none absolute right-5 top-5 size-16 object-contain sm:right-8 sm:top-8 sm:size-24"
+          />
+        )}
+        <div className="absolute inset-x-5 bottom-5 grid grid-cols-2 gap-3 sm:inset-x-8 sm:bottom-8">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              openCoverageInfo(policy);
+            }}
+            className="h-10 cursor-pointer rounded-xl border-[1.5px] border-[#a6e00c] bg-[#fff9f3] text-[12px] font-bold text-[rgba(45,61,0,0.78)] shadow-[0px_4px_10px_rgba(129,74,0,0.1)] transition-shadow hover:shadow-[0px_6px_16px_rgba(166,224,12,0.35)] sm:h-13 sm:text-[15px]"
+          >
+            View Policies
+          </button>
+          <button
+            type="button"
+            onClick={(e) => e.stopPropagation()}
+            className="h-10 cursor-pointer rounded-xl border-[1.5px] border-[#a6e00c] bg-[#a6e00c] text-[12px] font-bold text-[#2d3d00] shadow-[0px_4px_10px_rgba(129,74,0,0.1)] transition-shadow hover:shadow-[0px_6px_16px_rgba(166,224,12,0.35)] sm:h-13 sm:text-[15px]"
+          >
+            File Claim
+          </button>
         </div>
       </div>
     </div>,

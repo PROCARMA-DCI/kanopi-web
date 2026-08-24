@@ -39,6 +39,7 @@ export interface PurchasedPlan {
   model: string;
   duration: string;
   price: number;
+  deductible_price?: number;
   purchase_date: string;
   image: string;
 }

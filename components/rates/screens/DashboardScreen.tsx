@@ -2,11 +2,13 @@
 
 import gsap from "gsap";
 import { useEffect, useRef, useState } from "react";
+import { CoverageInfoModal } from "../CoverageInfoModal";
 import { ComponentIcon } from "../ComponentIcon";
 import { CoveredComponentsModal } from "../CoveredComponentsModal";
 import { ACCOUNT, SUMMARY_COMPONENTS } from "../data/account";
 import { PolicyDetailModal } from "../PolicyDetailModal";
 import { RatesHeader } from "../RatesHeader";
+import { useCoverageInfoModal } from "../useCoverageInfoModal";
 import { useFlow } from "../wizard/FlowProvider";
 import { useHeaderDominance } from "../wizard/useHeaderDominance";
 import type { KanopiLoginData, PurchasedPlan } from "./LoginScreen";
@@ -32,6 +34,19 @@ export function DashboardScreen() {
   // its own bespoke `sticky` header with no dominance crossfade, same
   // class of inconsistency EntryScreen had before it was fixed.
   useHeaderDominance(rootRef);
+
+  // Same "See what's covered" fetch/modal logic CoverageScreen uses for
+  // its cards — one shared hook instead of copying the fetch+state dance
+  // a second time here.
+  const {
+    infoOpen,
+    infoLoading,
+    infoError,
+    infoTitle,
+    infoHtml,
+    openCoverageInfo,
+    closeCoverageInfo,
+  } = useCoverageInfoModal();
 
   const loginData = flow.data.loginData as KanopiLoginData | undefined;
   const customer = loginData?.CustomerInfo;
@@ -95,47 +110,89 @@ export function DashboardScreen() {
 
         {/* Two columns */}
         <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {/* Left: coverage cards — a fanned stack (Figma 55:207) when
+          {/* Left: coverage cards (Figma 745:414) — a fanned stack when
               there's more than one: each earlier card only peeks its top
               (title) above the next one, which sits on top of it (higher
               z-index, pulled up with a negative margin). The LAST one is
               the only one nothing covers, so it's the only one showing its
               full details inline — click ANY card (peeking or not) to see
-              its own full details in PolicyDetailModal. Straight from
-              checkAlreadyPurchasedPlanForEmail — no vehicle/policy-number
-              field exists in that data, just plan_id/title/term/price. */}
+              its own full details in PolicyDetailModal. Real data now
+              includes year/make/model/duration and a real vehicle image
+              (checkAlreadyPurchasedPlanForEmail no longer omits these). */}
           <div data-rise className="flex flex-col">
             {policies.map((policy, i) => (
-              <button
+              <div
                 key={`${policy.plan_id}-${i}`}
-                type="button"
+                role="button"
+                tabIndex={0}
                 onClick={() => setSelectedPolicy(policy)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setSelectedPolicy(policy);
+                  }
+                }}
                 style={{
                   zIndex: i + 1,
                   marginTop: i === 0 ? 0 : -140,
                 }}
-                className="relative block h-[220px] w-full cursor-pointer rounded-2xl border-[1.5px] border-[#7b8466] bg-[#fff9f5] p-5 text-left shadow-[0px_4px_22px_rgba(129,74,0,0.15)] transition-shadow hover:shadow-[0px_6px_26px_rgba(129,74,0,0.22)] sm:h-[292px] sm:rounded-[40px] sm:p-8"
+                className="relative block h-[340px] w-full cursor-pointer rounded-2xl border-[1.5px] border-[#7b8466] bg-[#fff9f5] p-5 text-left shadow-[0px_4px_22px_rgba(129,74,0,0.15)] transition-shadow outline-none hover:shadow-[0px_6px_26px_rgba(129,74,0,0.22)] sm:h-[400px] sm:rounded-[40px] sm:p-8"
               >
-                <h3 className="max-w-[70%] text-[18px] font-medium text-[#2d3d00] sm:text-[25px]">
+                <h3 className="max-w-[65%] text-[18px] font-medium text-[#2d3d00] sm:text-[25px]">
                   {policy.title}
                 </h3>
-                <p className="mt-3 text-[14px] text-[#7b8466] sm:text-[19px]">
+                <p className="mt-2 max-w-[65%] text-[14px] font-medium text-[#2d3d00] sm:text-[19px]">
+                  {[policy.year, policy.make, policy.model]
+                    .filter(Boolean)
+                    .join(" ")}
+                </p>
+                <p className="mt-1 max-w-[65%] text-[13px] text-[#7b8466] sm:text-[17px]">
                   {policy.term}
                 </p>
-                <p className="mt-4 text-[14px] font-medium text-[#7d8760] sm:text-[19px]">
+                <p className="mt-1 max-w-[65%] text-[13px] text-[#7b8466] opacity-75 sm:text-[17px]">
+                  {policy.duration}
+                </p>
+                <p className="mt-3 text-[14px] font-medium text-[#7d8760] sm:text-[19px]">
                   Price:
                 </p>
                 <p className="text-[14px] text-[#7d8760] opacity-75 sm:text-[19px]">
                   ${policy.price.toLocaleString("en-US")}
                 </p>
 
-                <div className="pointer-events-none absolute right-6 top-6 size-16 text-[#a6e00c]">
-                  <img src={"images/Group3018.png"} alt="" className="" />
+                {policy.image && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={policy.image}
+                    alt=""
+                    className="pointer-events-none absolute right-5 top-5 size-16 object-contain sm:right-8 sm:top-8 sm:size-24"
+                  />
+                )}
+
+                {/* Per-card actions — View Policies reuses the same "See
+                    what's covered" fetch/modal every CoverageScreen card
+                    uses; File Claim has no destination yet. Both stop
+                    propagation so they don't also trigger the card's own
+                    click (which opens PolicyDetailModal). */}
+                <div className="absolute inset-x-5 bottom-5 grid grid-cols-2 gap-3 sm:inset-x-8 sm:bottom-8">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openCoverageInfo(policy);
+                    }}
+                    className="h-10 cursor-pointer rounded-xl border-[1.5px] border-[#a6e00c] bg-[#fff9f3] text-[12px] font-bold text-[rgba(45,61,0,0.78)] shadow-[0px_4px_10px_rgba(129,74,0,0.1)] transition-shadow hover:shadow-[0px_6px_16px_rgba(166,224,12,0.35)] sm:h-13 sm:text-[15px]"
+                  >
+                    View Policies
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => e.stopPropagation()}
+                    className="h-10 cursor-pointer rounded-xl border-[1.5px] border-[#a6e00c] bg-[#a6e00c] text-[12px] font-bold text-[#2d3d00] shadow-[0px_4px_10px_rgba(129,74,0,0.1)] transition-shadow hover:shadow-[0px_6px_16px_rgba(166,224,12,0.35)] sm:h-13 sm:text-[15px]"
+                  >
+                    File Claim
+                  </button>
                 </div>
-                <div className="pointer-events-none absolute bottom-4 right-6 h-16 w-28 text-[#c8b58a]">
-                  <img src={"images/Group3012.png"} alt="" className="" />
-                </div>
-              </button>
+              </div>
             ))}
           </div>
 
@@ -195,6 +252,15 @@ export function DashboardScreen() {
       <PolicyDetailModal
         policy={selectedPolicy}
         onClose={() => setSelectedPolicy(null)}
+        openCoverageInfo={openCoverageInfo}
+      />
+      <CoverageInfoModal
+        open={infoOpen}
+        onClose={closeCoverageInfo}
+        title={infoTitle}
+        loading={infoLoading}
+        error={infoError}
+        descriptionHtml={infoHtml}
       />
     </section>
   );
