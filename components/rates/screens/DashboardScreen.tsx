@@ -2,38 +2,38 @@
 
 import gsap from "gsap";
 import { useEffect, useRef, useState } from "react";
-import { CoverageInfoModal } from "../CoverageInfoModal";
 import { ComponentIcon } from "../ComponentIcon";
+import { CoverageInfoModal } from "../CoverageInfoModal";
 import { CoveredComponentsModal } from "../CoveredComponentsModal";
 import { ACCOUNT, SUMMARY_COMPONENTS } from "../data/account";
 import { PolicyDetailModal } from "../PolicyDetailModal";
-import { RatesHeader } from "../RatesHeader";
 import { useCoverageInfoModal } from "../useCoverageInfoModal";
 import { useFlow } from "../wizard/FlowProvider";
-import { useHeaderDominance } from "../wizard/useHeaderDominance";
+import { ScreenShell } from "../wizard/ScreenShell";
 import type { KanopiLoginData, PurchasedPlan } from "./LoginScreen";
 
 /**
- * Returning-member dashboard shown after login. A terminal full-screen page
- * (its own header + avatar, no wizard progress/footer). Profile + policy
- * cards come straight from POST /kanopiLogin's response (saved by
+ * Returning-member dashboard shown after login. Same ScreenShell every
+ * NoAccountFlow screen uses (header + dominance crossfade + snap-scroll
+ * section) — no onNext/onBack, since cards/buttons handle their own
+ * navigation, matching CoverageScreen's own no-footer pattern. Profile +
+ * policy cards come straight from POST /kanopiLogin's response (saved by
  * LoginScreen as flow.data.loginData) — no demo fallback, since that's a
  * real production API. The right-side coverage-summary/component-tiles
  * section still uses the static ACCOUNT/SUMMARY_COMPONENTS placeholder —
  * no equivalent real endpoint for that part yet.
  */
-export function DashboardScreen() {
+export function DashboardScreen({
+  onOpenMessages,
+}: {
+  onOpenMessages: (policy: PurchasedPlan) => void;
+}) {
   const flow = useFlow();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedPolicy, setSelectedPolicy] = useState<PurchasedPlan | null>(
     null,
   );
-  const rootRef = useRef<HTMLElement>(null);
-  // Matches every NoAccountFlow screen's header treatment (ScreenShell/
-  // ResultScreen/PaymentScreen all use this) — this screen was still on
-  // its own bespoke `sticky` header with no dominance crossfade, same
-  // class of inconsistency EntryScreen had before it was fixed.
-  useHeaderDominance(rootRef);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   // Same "See what's covered" fetch/modal logic CoverageScreen uses for
   // its cards — one shared hook instead of copying the fetch+state dance
@@ -61,7 +61,7 @@ export function DashboardScreen() {
   useEffect(() => {
     const ctx = gsap.context(() => {
       gsap.from(
-        rootRef.current?.querySelectorAll<HTMLElement>("[data-rise]") ?? [],
+        contentRef.current?.querySelectorAll<HTMLElement>("[data-rise]") ?? [],
         {
           autoAlpha: 0,
           y: 28,
@@ -71,25 +71,24 @@ export function DashboardScreen() {
           delay: 0.15,
         },
       );
-    }, rootRef);
+    }, contentRef);
     return () => ctx.revert();
   }, []);
 
   return (
-    <section
-      ref={rootRef}
+    <ScreenShell
       id={flow.resultId}
-      className="relative flex min-h-[100dvh] w-full snap-start snap-always flex-col bg-[#fff9f1]"
+      index={0}
+      total={1}
+      completion={1}
+      title=""
+      canAdvance
+      contentClassName="max-w-6xl"
     >
-      <RatesHeader title="" />
-
-      <div className="mx-auto w-full max-w-6xl flex-1 px-6 pb-12 pt-24 sm:pt-40.5">
-        {/* Profile — fully visible, in normal flow below the fixed header
-            (no straddling/clipping — that's an EntryScreen-mascot-specific
-            trick, wrong fit for an actual profile photo). From kanopiLogin's
-            CustomerInfo/MainScreenProfile, no demo fallback (this is a real
-            production API). No "joined" date exists in that response, so
-            that line is just gone. */}
+      <div ref={contentRef}>
+        {/* Profile — from kanopiLogin's CustomerInfo/MainScreenProfile, no
+            demo fallback (this is a real production API). No "joined" date
+            exists in that response, so that line is just gone. */}
         <div data-rise className="flex flex-col items-center gap-2">
           {loginData?.MainScreenProfile ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -170,7 +169,11 @@ export function DashboardScreen() {
 
                 {/* Per-card actions — View Policies reuses the same "See
                     what's covered" fetch/modal every CoverageScreen card
-                    uses; File Claim has no destination yet. Both stop
+                    uses; File Claim opens the Messages area (no dedicated
+                    "start a claim thread" endpoint exists yet, so this
+                    lands on the thread list — swap for a specific
+                    threadid once there's a way to know which thread a
+                    claim on THIS policy should open). Both stop
                     propagation so they don't also trigger the card's own
                     click (which opens PolicyDetailModal). */}
                 <div className="absolute inset-x-5 bottom-5 grid grid-cols-2 gap-3 sm:inset-x-8 sm:bottom-8">
@@ -180,14 +183,17 @@ export function DashboardScreen() {
                       e.stopPropagation();
                       openCoverageInfo(policy);
                     }}
-                    className="h-10 cursor-pointer rounded-xl border-[1.5px] border-[#a6e00c] bg-[#fff9f3] text-[12px] font-bold text-[rgba(45,61,0,0.78)] shadow-[0px_4px_10px_rgba(129,74,0,0.1)] transition-shadow hover:shadow-[0px_6px_16px_rgba(166,224,12,0.35)] sm:h-13 sm:text-[15px]"
+                    className="h-10 cursor-pointer rounded-xl border-[1.5px] border-[#a6e00c] bg-[#a6e00c] text-[12px] font-bold text-[#2d3d00] shadow-[0px_4px_10px_rgba(129,74,0,0.1)] transition-shadow hover:shadow-[0px_6px_16px_rgba(166,224,12,0.35)] sm:h-13 sm:text-[15px]"
                   >
                     View Policies
                   </button>
                   <button
                     type="button"
-                    onClick={(e) => e.stopPropagation()}
-                    className="h-10 cursor-pointer rounded-xl border-[1.5px] border-[#a6e00c] bg-[#a6e00c] text-[12px] font-bold text-[#2d3d00] shadow-[0px_4px_10px_rgba(129,74,0,0.1)] transition-shadow hover:shadow-[0px_6px_16px_rgba(166,224,12,0.35)] sm:h-13 sm:text-[15px]"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onOpenMessages(policy);
+                    }}
+                    className="h-10 cursor-pointer rounded-xl border-[1.5px] border-[#a6e00c] bg-[#fff9f3] text-[12px] font-bold text-[rgba(45,61,0,0.78)] shadow-[0px_4px_10px_rgba(129,74,0,0.1)] transition-shadow hover:shadow-[0px_6px_16px_rgba(166,224,12,0.35)] sm:h-13 sm:text-[15px]"
                   >
                     File Claim
                   </button>
@@ -262,6 +268,6 @@ export function DashboardScreen() {
         error={infoError}
         descriptionHtml={infoHtml}
       />
-    </section>
+    </ScreenShell>
   );
 }
