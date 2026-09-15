@@ -77,3 +77,44 @@ export interface KanopiSendMessageResponse {
   threadid: number;
   data: KanopiThreadMessage;
 }
+
+/**
+ * One message row returned directly inside a brand-new chat's create
+ * response (POST /kanopiMessage) — same person/timestamp fields as
+ * KanopiThreadMessage, but message_id/id/threadid/status come back as
+ * strings here instead of numbers.
+ */
+export interface KanopiNewChatMessage {
+  message_id: string;
+  id: string;
+  threadid: string;
+  title: string;
+  user1: string;
+  user1Name: string;
+  User1Phone: string;
+  User1Image: string;
+  message: string;
+  timestamp: string;
+  user1read: string;
+  user2read: string;
+  status: string;
+  device_type: string;
+  ContractNo: string;
+  kanopi_thread_status: string;
+}
+
+/**
+ * Response for starting a brand-new claim thread (POST /kanopiMessage,
+ * body: contract_id, user_id, customer_id, message) — used ONLY for a
+ * policy's very first message, when no threadid exists yet. Every message
+ * after this one goes through POST /kanopiSendMessage instead, against the
+ * threadid this response hands back.
+ */
+export interface KanopiCreateChatResponse {
+  success: number;
+  message: string;
+  threadid: number;
+  contractid: string;
+  ContractNo: string;
+  kanopi_threads: KanopiNewChatMessage[];
+}

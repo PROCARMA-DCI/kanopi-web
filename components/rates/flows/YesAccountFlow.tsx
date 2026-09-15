@@ -27,8 +27,12 @@ function Screens() {
   // live as plain local reveal flags rather than FlowProvider steps — but
   // once revealed they stay mounted forever too, same as every other
   // screen here, so scrolling back to them never re-fetches for free
-  // (that's what MessagesScreen's own useRevisit hook is for).
+  // (that's what MessagesScreen's own useRevisit hook is for). threadId
+  // stays separate from "is the thread screen revealed at all" — a brand
+  // new/unsaved chat is revealed with threadId still null (see
+  // ThreadScreen's own "first message creates the thread" mode).
   const [messagesRevealed, setMessagesRevealed] = useState(false);
+  const [threadRevealed, setThreadRevealed] = useState(false);
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
 
   return (
@@ -48,13 +52,20 @@ function Screens() {
           onGoToDashboard={() => scrollTo(flow.resultId)}
           onOpenThread={(threadId) => {
             setActiveThreadId(threadId);
+            setThreadRevealed(true);
+            scrollTo(THREAD_ID);
+          }}
+          onStartNewChat={() => {
+            setActiveThreadId(null);
+            setThreadRevealed(true);
             scrollTo(THREAD_ID);
           }}
         />
       )}
-      {flow.finished && activeThreadId && (
+      {flow.finished && threadRevealed && (
         <ThreadScreen
           threadId={activeThreadId}
+          onThreadCreated={setActiveThreadId}
           onBack={() => scrollTo(MESSAGES_ID)}
         />
       )}

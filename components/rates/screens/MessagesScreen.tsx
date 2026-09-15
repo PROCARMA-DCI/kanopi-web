@@ -14,6 +14,7 @@ import type { PurchasedPlan } from "./LoginScreen";
 
 interface MessagesScreenProps {
   onOpenThread: (threadId: string) => void;
+  onStartNewChat: () => void;
   onGoToDashboard: () => void;
 }
 
@@ -41,12 +42,15 @@ function statusBadgeClass(status: string) {
  * view, not just on first mount.
  *
  * Title/active-plan bar/search/tabs always render — only the area below
- * them swaps: the real thread list when there is one, or a centered
- * "New Chat" prompt when there's nothing to show (no results at all, or
- * the current search/tab filter matches nothing).
+ * them swaps: POST /kanopiThreads' `success` flag tells the two cases
+ * apart — success 1 with threads means a real list; success 0 (or an
+ * empty list) is NOT an error, it just means this policy has no claim
+ * thread yet, so a centered "New Chat" prompt shows instead. When threads
+ * DO exist, "New Chat" moves to a pinned bottom-right button instead.
  */
 export function MessagesScreen({
   onOpenThread,
+  onStartNewChat,
   onGoToDashboard,
 }: MessagesScreenProps) {
   const flow = useFlow();
@@ -72,11 +76,15 @@ export function MessagesScreen({
       body: { contractid: contract?.plan_id ?? "" },
     });
     setLoading(false);
-    if (!res.ok || !Array.isArray(res.threads)) {
+    if (!res.ok) {
       setError("Couldn't load your messages — please try again.");
       return;
     }
-    setThreads(res.threads);
+    // success === 0 just means "no claim thread for this policy yet" — not
+    // an error, the New Chat prompt below already covers that case.
+    setThreads(
+      res.success === 1 && Array.isArray(res.threads) ? res.threads : [],
+    );
   }, [contract?.plan_id]);
 
   useRevisit(rootRef, load);
@@ -108,10 +116,7 @@ export function MessagesScreen({
   const newChatButton = (
     <button
       type="button"
-      onClick={() => {
-        // No "start a new thread" endpoint exists yet — wire this up to
-        // whatever creates a fresh thread once that's available.
-      }}
+      onClick={onStartNewChat}
       className="flex h-11 cursor-pointer items-center gap-1.5 rounded-full bg-[#a6e00c] px-5 text-[13px] font-bold text-[#2d3d00] shadow-[0px_4px_14px_rgba(129,74,0,0.25)] transition-shadow hover:shadow-[0px_6px_18px_rgba(166,224,12,0.4)] sm:h-12 sm:text-[15px]"
     >
       <span className="text-[16px] leading-none">+</span> New Chat
@@ -127,7 +132,7 @@ export function MessagesScreen({
         completion={1}
         title="Messages"
         canAdvance
-        // onBack={onGoToDashboard}
+        onBack={onGoToDashboard}
         contentClassName="max-w-3xl"
       >
         <div className="flex items-start justify-between gap-3">
@@ -191,7 +196,11 @@ export function MessagesScreen({
           </p>
         )}
 
-        {!loading && !hasVisibleThreads && (
+        {!loading && error && (
+          <p className="mt-8 text-center text-[14px] text-red-600">{error}</p>
+        )}
+
+        {!loading && !error && !hasVisibleThreads && (
           <div className="mt-10 flex flex-col items-center gap-4 py-10 text-center">
             <p className="text-[14px] text-[#7d8760]">
               {hasAnyThreads

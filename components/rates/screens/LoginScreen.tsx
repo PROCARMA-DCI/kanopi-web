@@ -43,8 +43,12 @@ export interface PurchasedPlan {
   purchase_date: string;
   image: string;
 }
+
+export interface dashboardCustomerInfo extends KanopiCustomerInfo {
+  UserID: string;
+}
 export interface dashboard {
-  CustomerInfo: KanopiCustomerInfo;
+  CustomerInfo: dashboardCustomerInfo;
   Plans: PurchasedPlan[];
 }
 
@@ -129,12 +133,15 @@ export function LoginScreen({ index }: { index: number }) {
           body: { email },
           badgeLoading: "Loading your plans",
         });
-        const plans = plansRes.message?.Plans;
+        const plans = plansRes.message?.Plans as PurchasedPlan[];
+        const CustomerInfo = plansRes.message
+          ?.CustomerInfo as dashboardCustomerInfo;
         const purchasedPlans = Array.isArray(plans) ? plans : [];
 
         flow.next(index, {
           email,
           loginData,
+          CustomerInfo,
           purchasedPlans,
         });
       }}
