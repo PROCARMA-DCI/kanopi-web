@@ -73,7 +73,7 @@ export function MessagesScreen({
       url: "/api/kanopiThreads",
       method: "POST",
       isFormdata: true,
-      body: { contractid: contract?.plan_id ?? "" },
+      body: { contractid: contract?.contract_id ?? "" },
     });
     setLoading(false);
     if (!res.ok) {

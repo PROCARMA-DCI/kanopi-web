@@ -31,6 +31,7 @@ export interface KanopiCustomerInfo {
 // own CoverageImages field is unrelated design/asset config, not the
 // customer's actual purchased plans).
 export interface PurchasedPlan {
+  contract_id: string;
   plan_id: string;
   title: string;
   term: string;

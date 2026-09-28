@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { fetching } from "@/lib/api/client";
+import { useEffect, useRef, useState } from "react";
 import type {
   KanopiCreateChatResponse,
   KanopiThreadDetail,
@@ -10,7 +10,11 @@ import type {
 } from "../data/messages";
 import { useFlow } from "../wizard/FlowProvider";
 import { ScreenShell } from "../wizard/ScreenShell";
-import type { dashboardCustomerInfo, KanopiLoginData, PurchasedPlan } from "./LoginScreen";
+import type {
+  dashboardCustomerInfo,
+  KanopiLoginData,
+  PurchasedPlan,
+} from "./LoginScreen";
 
 const POLL_INTERVAL_MS = 30_000;
 
@@ -66,6 +70,7 @@ export function ThreadScreen({
   // A different thread was opened from the list (or a fresh "New Chat")
   // — reset everything to match.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLocalThreadId(threadId);
     setThread(null);
     setMessages([]);
@@ -96,6 +101,7 @@ export function ThreadScreen({
   useEffect(() => {
     if (!localThreadId) return;
     let active = true;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadThread(localThreadId, true);
 
     const interval = setInterval(() => {
@@ -106,7 +112,6 @@ export function ThreadScreen({
       active = false;
       clearInterval(interval);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [localThreadId]);
 
   // Keep the view scrolled to the latest message on load / new messages.
@@ -128,7 +133,7 @@ export function ThreadScreen({
         method: "POST",
         isFormdata: true,
         body: {
-          contract_id: contract?.plan_id ?? "",
+          contract_id: contract?.contract_id ?? "",
           user_id: customerInfo?.UserID ?? "",
           customer_id: customerInfo?.CustomerID ?? "",
           message: text,
@@ -146,11 +151,13 @@ export function ThreadScreen({
       // next poll.
       const rawInitialMessages = (res.kanopi_threads ??
         []) as KanopiCreateChatResponse["kanopi_threads"];
-      const initialMessages: KanopiThreadMessage[] = rawInitialMessages.map((m) => ({
-        ...m,
-        message_id: Number(m.message_id),
-        threadid: Number(m.threadid),
-      }));
+      const initialMessages: KanopiThreadMessage[] = rawInitialMessages.map(
+        (m) => ({
+          ...m,
+          message_id: Number(m.message_id),
+          threadid: Number(m.threadid),
+        }),
+      );
       setMessages(initialMessages);
       setDraft("");
       setLocalThreadId(newId);
@@ -187,7 +194,8 @@ export function ThreadScreen({
       total={1}
       completion={1}
       title={
-        thread?.user1Name || (localThreadId ? "Conversation" : "New Conversation")
+        thread?.user1Name ||
+        (localThreadId ? "Conversation" : "New Conversation")
       }
       canAdvance
       onBack={onBack}

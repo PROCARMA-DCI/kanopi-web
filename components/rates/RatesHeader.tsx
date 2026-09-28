@@ -37,7 +37,7 @@ export function RatesHeader({ title, progress }: RatesHeaderProps) {
       />
 
       <div className="pointer-events-none absolute left-1/2 top-1/2 flex max-w-[60%] -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 sm:max-w-none sm:gap-2">
-        <span className="truncate text-[13px] font-bold leading-none text-[#2d3d00] sm:text-[20px]">
+        <span className="truncate text-[13px] overflow-visible font-bold leading-none text-[#2d3d00] sm:text-[20px]">
           {title}
         </span>
         {progress && (

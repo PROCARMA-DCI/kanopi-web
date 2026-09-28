@@ -258,6 +258,7 @@ export function DashboardScreen({
       <PolicyDetailModal
         policy={selectedPolicy}
         onClose={() => setSelectedPolicy(null)}
+        onOpenMessages={onOpenMessages}
         openCoverageInfo={openCoverageInfo}
       />
       <CoverageInfoModal

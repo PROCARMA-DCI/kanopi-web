@@ -3,9 +3,9 @@
 import { useScroll } from "@/app/ScrollProvider";
 import { useState } from "react";
 import { DashboardScreen } from "../screens/DashboardScreen";
+import type { PurchasedPlan } from "../screens/LoginScreen";
 import { LoginScreen } from "../screens/LoginScreen";
 import { MessagesScreen } from "../screens/MessagesScreen";
-import type { PurchasedPlan } from "../screens/LoginScreen";
 import { ThreadScreen } from "../screens/ThreadScreen";
 import { FlowProvider, useFlow } from "../wizard/FlowProvider";
 

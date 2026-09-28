@@ -9,6 +9,7 @@ interface PolicyDetailModalProps {
   policy: PurchasedPlan | null;
   onClose: () => void;
   openCoverageInfo: (coverage: PurchasedPlan) => void;
+  onOpenMessages: (policy: PurchasedPlan) => void;
 }
 
 /**
@@ -25,6 +26,7 @@ export function PolicyDetailModal({
   policy,
   onClose,
   openCoverageInfo,
+  onOpenMessages,
 }: PolicyDetailModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -121,6 +123,7 @@ export function PolicyDetailModal({
             type="button"
             onClick={(e) => {
               e.stopPropagation();
+              onClose();
               openCoverageInfo(policy);
             }}
             className="h-10 cursor-pointer rounded-xl border-[1.5px] border-[#a6e00c] bg-[#fff9f3] text-[12px] font-bold text-[rgba(45,61,0,0.78)] shadow-[0px_4px_10px_rgba(129,74,0,0.1)] transition-shadow hover:shadow-[0px_6px_16px_rgba(166,224,12,0.35)] sm:h-13 sm:text-[15px]"
@@ -129,7 +132,11 @@ export function PolicyDetailModal({
           </button>
           <button
             type="button"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+              onOpenMessages(policy);
+            }}
             className="h-10 cursor-pointer rounded-xl border-[1.5px] border-[#a6e00c] bg-[#a6e00c] text-[12px] font-bold text-[#2d3d00] shadow-[0px_4px_10px_rgba(129,74,0,0.1)] transition-shadow hover:shadow-[0px_6px_16px_rgba(166,224,12,0.35)] sm:h-13 sm:text-[15px]"
           >
             File Claim
