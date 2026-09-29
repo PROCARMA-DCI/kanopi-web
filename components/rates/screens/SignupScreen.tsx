@@ -141,7 +141,7 @@ export function SignupScreen({ index }: { index: number }) {
         // BOTH to resolve — awaiting them together (not fire-and-forget)
         // avoids a race where `coverages` is read before its fetch settles.
         const [coveragesRes, existingPlanRes] = await Promise.all([
-          fetching<{ message?: planType[] }>({
+          fetching<{ data?: planType[] }>({
             url: "/api/kanopiPlansList",
             method: "POST",
             isFormdata: true,
@@ -171,7 +171,7 @@ export function SignupScreen({ index }: { index: number }) {
         // true for a non-empty STRING too, so without Array.isArray() a
         // string message here would get stored as `existingPlan` and crash
         // CoverageScreen's `.map()` over it.
-        const plans = coveragesRes.message;
+        const plans = coveragesRes.data;
         const coverages =
           coveragesRes.success && Array.isArray(plans) && plans.length
             ? (plans as planType[])
