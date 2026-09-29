@@ -42,9 +42,9 @@ export function IntroSection() {
         {/* Center text content */}
         <div className="text">
           <a href="#" className="logo">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {}
             <img
-              src="/images/logo-3.svg"
+              src="/images/Kanopi-logo-LATO.svg"
               alt="Kanopi"
               width={227}
               height={71}
