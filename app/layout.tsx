@@ -32,10 +32,10 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   title: "Kanopi",
-  description: "",
-  icons: {
-    icon: "/images/logo.svg",
-  },
+  description: "Kanopi is a vehicle coverage platform.",
+  // icons: {
+  //   icon: "/images/logo.svg",
+  // },
 };
 
 export default function RootLayout({
