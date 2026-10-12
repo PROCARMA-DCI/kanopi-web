@@ -65,7 +65,7 @@ export function IndustrySection() {
                 alt={item.title}
               />
               <h4 className="item-industry__title">{item.title}</h4>
-              <p className="item-industry__text">{item.text}</p>
+              {/* <p className="item-industry__text">{item.text}</p> */}
             </div>
             {i < items.length - 1 && (
               <div className="industry__list-arrow">
