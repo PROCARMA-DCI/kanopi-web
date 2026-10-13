@@ -12,7 +12,7 @@ function readSvg(name: string) {
 const items = [
   {
     img: "/icons/industry-1.svg",
-    title: "Commissions + Dealer Markups",
+    title: "Commissions + Markups",
     text: 'Chances are you are paying double what your coverage is worth just to line the pockets of "your local dealer."',
   },
   {
