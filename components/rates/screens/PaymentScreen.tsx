@@ -2,6 +2,7 @@
 
 import { useLayout } from "@/app/providers/LayoutContext";
 import { useLoader } from "@/app/providers/LoaderContext";
+import { useScroll } from "@/app/ScrollProvider";
 import { fetching } from "@/lib/api/client";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe, type Stripe } from "@stripe/stripe-js";
@@ -10,6 +11,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { buildContractPayload } from "../buildContractPayload";
 import { planType } from "../data/coverages";
+import { isOtpVerified } from "../otpVerification";
 import { RatesHeader } from "../RatesHeader";
 import { useFlow } from "../wizard/FlowProvider";
 import { useHeaderDominance } from "../wizard/useHeaderDominance";
@@ -42,10 +44,13 @@ interface CreatePaymentIntentResult {
  */
 export function PaymentScreen({ index }: { index: number }) {
   const flow = useFlow();
+  const { scrollTo } = useScroll();
   const rootRef = useRef<HTMLElement>(null);
   const { DealerID } = useLayout();
   const { badgeLoading: setBadgeLoading } = useLoader();
   const selectedCoverage = flow.data.selectedCoverage as planType | null;
+  // False as soon as email/phone change after verifying — see otpVerification.ts.
+  const verified = isOtpVerified(flow.data);
 
   useHeaderDominance(rootRef);
 
@@ -88,6 +93,9 @@ export function PaymentScreen({ index }: { index: number }) {
         return;
       }
       if (runningRef.current) return;
+      // Never stage a contract / create a PaymentIntent for contact info
+      // that hasn't been verified (re-runs once `verified` flips back).
+      if (!isOtpVerified(flowDataRef.current)) return;
 
       const payload = buildContractPayload(
         flowDataRef.current,
@@ -214,7 +222,7 @@ export function PaymentScreen({ index }: { index: number }) {
       active = false;
       io.disconnect();
     };
-  }, [selectedCoverage, DealerID, setBadgeLoading]);
+  }, [selectedCoverage, DealerID, setBadgeLoading, verified]);
 
   // The old PaymentIntent is dead once the backend has voided it (contract
   // save failed under manual capture — see StripeCheckoutCard), so "try
@@ -237,7 +245,7 @@ export function PaymentScreen({ index }: { index: number }) {
         progress={{ total: flow.total, current: index, completion: 1 }}
       />
 
-      {status === "error" && (
+      {verified && status === "error" && (
         <div className="flex flex-1 flex-col items-center justify-center gap-6 px-6 pt-24 sm:pt-40.5 text-center">
           <p className="text-[20px] font-bold text-[#2d3d00]">
             We couldn&apos;t start your payment. Please go back and try again.
@@ -252,7 +260,23 @@ export function PaymentScreen({ index }: { index: number }) {
         </div>
       )}
 
-      {status === "ready" && stripePromise && (
+      {!verified && (
+        <div className="flex flex-1 flex-col items-center justify-center gap-6 px-6 pt-24 sm:pt-40.5 text-center">
+          <p className="text-[20px] font-bold text-[#2d3d00]">
+            Your contact info changed. Please verify your email or phone again
+            before paying.
+          </p>
+          <button
+            type="button"
+            onClick={() => scrollTo(flow.stepId(index - 2))}
+            className="cursor-pointer text-[15px] font-semibold text-[#7d8760] underline"
+          >
+            Verify again
+          </button>
+        </div>
+      )}
+
+      {verified && status === "ready" && stripePromise && (
         <div className="mx-auto grid w-full max-w-[1200px] flex-1 grid-cols-1 items-center gap-6 px-6 pb-16 pt-24 sm:gap-12 sm:pt-40.5 lg:grid-cols-2 lg:divide-x lg:divide-[rgba(125,135,96,0.3)]">
           {/* Left: illustration + headline */}
           <div className="flex flex-col items-start gap-6 lg:pr-12">

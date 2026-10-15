@@ -9,7 +9,8 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { fetching } from "@/lib/api/client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getContactKey } from "../otpVerification";
 import { useFlow } from "../wizard/FlowProvider";
 import { ScreenShell } from "../wizard/ScreenShell";
 
@@ -45,6 +46,15 @@ export function OtpScreen({ index }: { index: number }) {
 
   const canAdvance = otp.length === OTP_LENGTH;
 
+  // Contact info changed → any code typed so far belongs to the old one.
+  // Clear it so a stale code can't be resubmitted for the new email/phone.
+  const contactKey = getContactKey(flow.data);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setOtp("");
+    setError("");
+  }, [contactKey]);
+
   const handleVerify = async () => {
     setError("");
     const res = await fetching({
@@ -60,7 +70,10 @@ export function OtpScreen({ index }: { index: number }) {
       return;
     }
 
-    flow.next(index, { otpVerified: true });
+    // Remember WHAT was verified, not just that something was — see
+    // otpVerification.ts. Replaces the old `otpVerified: true` boolean,
+    // which stayed true even after email/phone were edited.
+    flow.next(index, { otpVerifiedFor: getContactKey(flow.data) });
   };
 
   return (
