@@ -102,7 +102,9 @@ export function CoverageCard({
           See what&apos;s covered
         </button>
 
-        <div className="flex items-center gap-5 sm:gap-10">
+        {/* Mobile: wraps under the button, full width with labels left and
+            amounts right. sm+: back to a compact block beside the button. */}
+        <div className="flex w-full items-center justify-between gap-5 sm:w-auto sm:justify-start sm:gap-10">
           <div className="flex flex-col">
             <span className="text-[14px] text-[#7b8466] sm:text-[19px]">
               Deductible

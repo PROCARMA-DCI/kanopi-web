@@ -143,7 +143,7 @@ export function CoverageScreen({ index }: { index: number }) {
         {/* Plan(s) already on file — shown above the purchasable list,
               always highlighted, not selectable. */}
         {existingPlans && existingPlans.length > 0 && (
-          <div className="grid grid-cols-1 gap-4 shadow p-4 rounded-2xl">
+          <div className="grid grid-cols-1 gap-4 shadow sm:p-4 rounded-2xl">
             {existingPlans?.map((raw, i) => {
               const plan = toDisplayPlan(raw);
               return (
@@ -167,7 +167,7 @@ export function CoverageScreen({ index }: { index: number }) {
           aria-label="Coverage options"
           className={cn(
             "grid grid-cols-1 gap-4",
-            existingPlanCount > 0 ? "px-10" : "",
+            existingPlanCount > 0 ? "sm:px-10" : "",
           )}
         >
           {coverages?.map((coverage) => (
