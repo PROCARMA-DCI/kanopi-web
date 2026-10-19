@@ -66,7 +66,7 @@ export function EntryScreen({ selected, onSelect }: EntryScreenProps) {
         <div
           role="radiogroup"
           aria-label="Do you have a Kanopi account?"
-          className="w-full flex flex-col gap-4"
+          className="flex w-full flex-col items-center gap-4"
         >
           {ENTRY_OPTIONS.map((opt) => (
             <OptionCard
