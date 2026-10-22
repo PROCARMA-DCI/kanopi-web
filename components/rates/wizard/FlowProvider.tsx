@@ -60,6 +60,8 @@ interface FlowProviderProps {
   total: number;
   /** Called when the user restarts — lets the parent reset the entry choice. */
   onRestart: () => void;
+  /** Rebuild a flow that was already completed (e.g. coming back from another page). */
+  initialData?: Record<string, unknown>;
   children: ReactNode;
 }
 
@@ -67,12 +69,13 @@ export function FlowProvider({
   flowKey,
   total,
   onRestart,
+  initialData,
   children,
 }: FlowProviderProps) {
   const { scrollTo } = useScroll();
   const [revealed, setRevealed] = useState(1); // first screen shows immediately
-  const [finished, setFinished] = useState(false);
-  const [data, setData] = useState<Record<string, unknown>>({});
+  const [finished, setFinished] = useState(!!initialData);
+  const [data, setData] = useState<Record<string, unknown>>(initialData ?? {});
 
   const stepId = (index: number) => `${flowKey}-step-${index}`;
   const resultId = `${flowKey}-result`;

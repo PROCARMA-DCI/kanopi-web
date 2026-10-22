@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { wantsDashboardRestore } from "./messagesSession";
 import { useScroll } from "@/app/ScrollProvider";
 import { EntryScreen } from "./EntryScreen";
 import { NoAccountFlow } from "./flows/NoAccountFlow";
@@ -17,6 +18,12 @@ import type { RateFlowKey } from "./types";
 export function RatesFlow() {
   const [flowKey, setFlowKey] = useState<RateFlowKey | null>(null);
   const { scrollTo } = useScroll();
+
+  // Back from /messages → go straight into the (restored) dashboard.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (wantsDashboardRestore()) setFlowKey("yes-account");
+  }, []);
 
   function handleEntry(choice: RateFlowKey) {
     // Re-picking the current choice → just scroll back down into it.

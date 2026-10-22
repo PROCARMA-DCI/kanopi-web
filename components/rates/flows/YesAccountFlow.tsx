@@ -1,81 +1,66 @@
 "use client";
 
-import { useScroll } from "@/app/ScrollProvider";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import {
+  clearDashboardRestore,
+  readSavedFlowData,
+  saveMessagesSession,
+  wantsDashboardRestore,
+} from "../messagesSession";
 import { DashboardScreen } from "../screens/DashboardScreen";
-import type { PurchasedPlan } from "../screens/LoginScreen";
+import type {
+  dashboardCustomerInfo,
+  KanopiLoginData,
+  PurchasedPlan,
+} from "../screens/LoginScreen";
 import { LoginScreen } from "../screens/LoginScreen";
-import { MessagesScreen } from "../screens/MessagesScreen";
-import { ThreadScreen } from "../screens/ThreadScreen";
 import { FlowProvider, useFlow } from "../wizard/FlowProvider";
 
 const TOTAL = 1;
 
-// Fixed DOM ids each post-login screen mounts under — scrollTo targets one
-// of these instead of any conditional-render view switch, matching how
-// NoAccountFlow moves between its own screens. DashboardScreen mounts
-// under flow.resultId (FlowProvider's own "<flowKey>-result", already
-// scrolled to automatically once flow.finished) rather than a separate id.
-const MESSAGES_ID = "yes-account-messages";
-const THREAD_ID = "yes-account-thread";
-
 function Screens() {
   const flow = useFlow();
-  const { scrollTo } = useScroll();
+  const router = useRouter();
 
-  // Messages/Thread aren't linear wizard steps (no progress bar), so they
-  // live as plain local reveal flags rather than FlowProvider steps — but
-  // once revealed they stay mounted forever too, same as every other
-  // screen here, so scrolling back to them never re-fetches for free
-  // (that's what MessagesScreen's own useRevisit hook is for). threadId
-  // stays separate from "is the thread screen revealed at all" — a brand
-  // new/unsaved chat is revealed with threadId still null (see
-  // ThreadScreen's own "first message creates the thread" mode).
-  const [messagesRevealed, setMessagesRevealed] = useState(false);
-  const [threadRevealed, setThreadRevealed] = useState(false);
-  const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
+  // Messages live on their own /messages page (list + thread side by side),
+  // which can't read this flow's in-memory data — so hand over what it
+  // needs, then navigate.
+  const openMessages = (policy: PurchasedPlan) => {
+    const loginData = flow.data.loginData as KanopiLoginData | undefined;
+    saveMessagesSession({
+      contract: policy,
+      customerInfo: flow.data.CustomerInfo as dashboardCustomerInfo | undefined,
+      customerId: loginData?.CustomerInfo?.CustomerID,
+      flowData: { ...flow.data, contract: policy },
+    });
+    router.push("/messages");
+  };
 
   return (
     <>
       {flow.revealed >= 1 && <LoginScreen index={0} />}
-      {flow.finished && (
-        <DashboardScreen
-          onOpenMessages={(policy: PurchasedPlan) => {
-            flow.patch({ contract: policy });
-            setMessagesRevealed(true);
-            scrollTo(MESSAGES_ID);
-          }}
-        />
-      )}
-      {flow.finished && messagesRevealed && (
-        <MessagesScreen
-          onGoToDashboard={() => scrollTo(flow.resultId)}
-          onOpenThread={(threadId) => {
-            setActiveThreadId(threadId);
-            setThreadRevealed(true);
-            scrollTo(THREAD_ID);
-          }}
-          onStartNewChat={() => {
-            setActiveThreadId(null);
-            setThreadRevealed(true);
-            scrollTo(THREAD_ID);
-          }}
-        />
-      )}
-      {flow.finished && threadRevealed && (
-        <ThreadScreen
-          threadId={activeThreadId}
-          onThreadCreated={setActiveThreadId}
-          onBack={() => scrollTo(MESSAGES_ID)}
-        />
-      )}
+      {flow.finished && <DashboardScreen onOpenMessages={openMessages} />}
     </>
   );
 }
 
 export function YesAccountFlow({ onRestart }: { onRestart: () => void }) {
+  // Coming back from /messages → start already finished, with the saved
+  // login data, so the dashboard shows instead of the login screen. Only
+  // mounts client-side (after GET COVERED), so reading storage here is safe.
+  const [restored] = useState(() =>
+    wantsDashboardRestore() ? readSavedFlowData() : null,
+  );
+  useEffect(clearDashboardRestore, []);
+
   return (
-    <FlowProvider flowKey="yes-account" total={TOTAL} onRestart={onRestart}>
+    <FlowProvider
+      flowKey="yes-account"
+      total={TOTAL}
+      onRestart={onRestart}
+      initialData={restored ?? undefined}
+    >
       <Screens />
     </FlowProvider>
   );

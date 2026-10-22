@@ -1,6 +1,7 @@
 "use client";
 
 import { useScroll } from "@/app/ScrollProvider";
+import { wantsDashboardRestore } from "@/components/rates/messagesSession";
 import { RatesFlow } from "@/components/rates/RatesFlow";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -32,6 +33,12 @@ export function GetCoveredClient({
   const lottieRef = useRef<LottieRefCurrentProps | null>(null);
   const [unlocked, setUnlocked] = useState(false);
   const { scrollTo } = useScroll();
+
+  // Back from /messages → keep the rates flow open so the dashboard can show.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (wantsDashboardRestore()) setUnlocked(true);
+  }, []);
 
   useEffect(() => {
     const el = rootRef.current;

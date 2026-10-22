@@ -56,6 +56,8 @@ export interface KanopiThreadMessage {
   User1Phone: string | null;
   User1Image: string | null;
   message: string;
+  /** URL of the attached file (image or other), if any. */
+  upload_img?: string | null;
   timestamp: string;
   user1read: string;
   user2read: string;
@@ -94,6 +96,8 @@ export interface KanopiNewChatMessage {
   User1Phone: string;
   User1Image: string;
   message: string;
+  /** URL of the attached file (image or other), if any. */
+  upload_img?: string | null;
   timestamp: string;
   user1read: string;
   user2read: string;
