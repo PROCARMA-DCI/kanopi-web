@@ -16,7 +16,7 @@ const slides = [
   },
   {
     h1: "Save more on your vehicle protection than ever before.",
-    p: "Kanopi strips away dealer markups and hidden fees — putting real money back in your pocket.",
+    p: "Kanopi strips away markups and hidden fees — putting real money back in your pocket.",
   },
   {
     h1: "Coverage that cares about you and the planet.",
